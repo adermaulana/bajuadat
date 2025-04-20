@@ -13,6 +13,19 @@ if($_SESSION['status'] != 'login'){
 }
 
 
+if(isset($_GET['hal']) == "hapus"){
+
+  $hapus = mysqli_query($koneksi, "DELETE FROM admin_222145 WHERE admin_id_222145 = '$_GET[id]'");
+
+  if($hapus){
+      echo "<script>
+      alert('Hapus data sukses!');
+      document.location='index.php';
+      </script>";
+  }
+}
+
+
 ?>
 
 <!DOCTYPE html>
@@ -23,7 +36,8 @@ if($_SESSION['status'] != 'login'){
   <title>Dashboard</title>
   <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../assets/dashboard.css">
-      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="../DataTables/datatables.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <style>
       .bd-placeholder-img {
@@ -76,7 +90,7 @@ if($_SESSION['status'] != 'login'){
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
       }
-  </style>
+    </style>
 
 </head>
 <body>
@@ -95,7 +109,7 @@ if($_SESSION['status'] != 'login'){
 
 <div class="container-fluid">
   <div class="row">
- <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
         <div class="position-sticky pt-3 sidebar-sticky">
           <ul class="nav flex-column">
             <li class="nav-item">
@@ -123,13 +137,13 @@ if($_SESSION['status'] != 'login'){
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="index.php">
+              <a class="nav-link " href="../pelanggan/index.php">
                 <i class="fas fa-users align-text-bottom me-2"></i>
                 Pelanggan
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="../user/index.php">
+              <a class="nav-link active" href="index.php">
                 <i class="fas fa-users align-text-bottom me-2"></i>
                 Admin
               </a>
@@ -138,39 +152,65 @@ if($_SESSION['status'] != 'login'){
         </div>
       </nav>
 
- <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <div class="col-lg-12">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Data Pelanggan</h1>
-        </div>
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Tambah Pelanggan Baru</h1>
-        </div>
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2 mb-3">Data Admin</h1>
+      </div>
 
-        <div class="col-lg-8">
-            <form method="post" class="mb-5" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
-                    <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label for="alamat" class="form-label">Alamat</label>
-                    <input type="text" class="form-control" id="alamat" name="alamat" required>
-                </div>
-                <div class="mb-3">
-                    <label for="telepon" class="form-label">Telepon</label>
-                    <input type="tel" class="form-control" id="telepon" name="telepon" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn btn">Tambah Data</button>
-            </form>  
-        </div>  
-    </main>
+      <div class="table-responsive col-lg-11">
+    <a style="background-color: #3a5a40; color:white;" class="btn btn mb-3" href="tambah.php">Tambah Admin</a>
+    <table id="myTable" class="table table-striped table-sm mt-3">
+        <thead>
+            <tr>
+                <th scope="col">No</th>
+                <th scope="col">Username</th>
+                <th scope="col">Nama Lengkap</th>
+                <th scope="col">Email</th>
+                <th scope="col">Aksi</th>
+            </tr>
+        </thead>
+        <tbody>
+        <?php
+                $no = 1;
+                $tampil = mysqli_query($koneksi, "SELECT * FROM admin_222145");
+                while($data = mysqli_fetch_array($tampil)):
+            ?>
+            <tr>
+                <td><?= $no++ ?></td>
+                <td><?= $data['username_222145'] ?></td>
+                <td><?= $data['nama_lengkap_222145'] ?></td>
+                <td><?= $data['email_222145'] ?></td>
+                <td>
+                    <div class="d-flex">
+                        <a href="edit.php?hal=edit&id=<?= $data['admin_id_222145']?>" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
+                        <a href="index.php?hal=hapus&id=<?= $data['admin_id_222145']?>" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                    </div>
+                </td>
+            </tr>
+            <?php
+                 endwhile; 
+                ?>
+        </tbody>
+    </table>
+</div>
+    </div>
+  </main>
   </div>
 </div>
+
+<!-- Include jQuery -->
+<script src="../DataTables/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+
+<script>
+
+$(document).ready( function () {
+    $('#myTable').DataTable();
+} );
+  
+</script>
+
+<script src="../DataTables/datatables.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
   <script src="../../assets/js/bootstrap.bundle.min.js"></script>

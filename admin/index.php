@@ -131,6 +131,12 @@ if($_SESSION['status'] != 'login'){
                 Pelanggan
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="../admin/user/index.php">
+                <i class="fas fa-users align-text-bottom me-2"></i>
+                Admin
+              </a>
+            </li>
           </ul>
         </div>
       </nav>

@@ -156,6 +156,12 @@ if(isset($_POST['simpan'])){
                 Pelanggan
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="../user/index.php">
+                <i class="fas fa-users align-text-bottom me-2"></i>
+                Admin
+              </a>
+            </li>
           </ul>
         </div>
       </nav>

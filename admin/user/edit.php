@@ -13,6 +13,63 @@ if($_SESSION['status'] != 'login'){
 }
 
 
+if(isset($_GET['hal'])){
+    if($_GET['hal'] == "edit"){
+        $tampil = mysqli_query($koneksi, "SELECT * FROM admin_222145 WHERE admin_id_222145 = '$_GET[id]'");
+        $data = mysqli_fetch_array($tampil);
+        if($data){
+            $admin_id = $data['admin_id_222145'];
+            $username = $data['username_222145'];
+            $nama_lengkap = $data['nama_lengkap_222145'];
+            $email = $data['email_222145'];
+        }
+    }
+}
+
+// Update Data
+if(isset($_POST['simpan'])){
+    // Get form data with security measures
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    
+    // Check if password field is not empty (optional update)
+    $password_update = "";
+    if(!empty($_POST['password'])){
+        $password = md5($_POST['password']);
+        $password_update = ", password_222145 = '$password'";
+    }
+    
+    // Check for duplicate username (excluding current admin)
+    $check = mysqli_query($koneksi, "SELECT * FROM admin_222145 WHERE username_222145 = '$username' AND admin_id_222145 != '$_GET[id]'");
+    
+    if(mysqli_num_rows($check) > 0){
+        echo "<script>
+                alert('Username sudah digunakan! Silakan gunakan username lain.');
+                document.location='edit.php?hal=edit&id=$_GET[id]';
+            </script>";
+    } else {
+        $simpan = mysqli_query($koneksi, "UPDATE admin_222145 SET
+                                    username_222145 = '$username',
+                                    nama_lengkap_222145 = '$nama_lengkap',
+                                    email_222145 = '$email'
+                                    $password_update
+                                    WHERE admin_id_222145 = '$_GET[id]'");
+        
+        if($simpan){
+            echo "<script>
+                    alert('Data admin berhasil diupdate!');
+                    document.location='index.php';
+                </script>";
+        } else {
+            echo "<script>
+                    alert('Update data gagal!');
+                    document.location='edit.php?hal=edit&id=$_GET[id]';
+                </script>";
+        }
+    }
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -123,13 +180,13 @@ if($_SESSION['status'] != 'login'){
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="index.php">
+              <a class="nav-link" href="../pelanggan/index.php">
                 <i class="fas fa-users align-text-bottom me-2"></i>
                 Pelanggan
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="../user/index.php">
+              <a class="nav-link active" href="index.php">
                 <i class="fas fa-users align-text-bottom me-2"></i>
                 Admin
               </a>
@@ -141,32 +198,37 @@ if($_SESSION['status'] != 'login'){
  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
     <div class="col-lg-12">
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Data Pelanggan</h1>
+            <h1 class="h2">Data Admin</h1>
         </div>
         <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Tambah Pelanggan Baru</h1>
+            <h1 class="h2">Tambah Admin Baru</h1>
         </div>
 
         <div class="col-lg-8">
-            <form method="post" class="mb-5" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
-                    <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label for="alamat" class="form-label">Alamat</label>
-                    <input type="text" class="form-control" id="alamat" name="alamat" required>
-                </div>
-                <div class="mb-3">
-                    <label for="telepon" class="form-label">Telepon</label>
-                    <input type="tel" class="form-control" id="telepon" name="telepon" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn btn">Tambah Data</button>
-            </form>  
+        <form method="post" class="mb-5" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
+                <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" 
+                    value="<?= isset($nama_lengkap) ? $nama_lengkap : '' ?>" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" 
+                    value="<?= isset($username) ? $username : '' ?>" required>
+                <small class="text-muted">Username harus unik</small>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password">
+                <small class="text-muted">Kosongkan jika tidak ingin mengubah password</small>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" 
+                    value="<?= isset($email) ? $email : '' ?>" required>
+            </div>
+            <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn btn">Update Admin</button>
+        </form>
         </div>  
     </main>
   </div>

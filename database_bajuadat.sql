@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 13, 2025 at 11:06 AM
+-- Generation Time: Apr 21, 2025 at 12:24 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,7 +40,7 @@ CREATE TABLE `admin_222145` (
 --
 
 INSERT INTO `admin_222145` (`admin_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `email_222145`) VALUES
-(1, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin', 'admin@gmail.com');
+(2, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin', 'admin@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -192,7 +192,7 @@ ALTER TABLE `produk_222145`
 -- AUTO_INCREMENT for table `admin_222145`
 --
 ALTER TABLE `admin_222145`
-  MODIFY `admin_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `admin_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `detail_pesanan_222145`
