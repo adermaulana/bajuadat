@@ -177,8 +177,8 @@ if($_SESSION['status'] != 'login'){
                 <td><?= $data['no_telp_222145'] ?></td>
                 <td><?= $data['email_222145'] ?></td>
                 <td>                                
-                                  <a href="../uploads/<?= $data['foto_ktp_222145']; ?>" data-lightbox="foto-ktp" data-title="Foto KTP">
-                                    <img src="../uploads/<?= $data['foto_ktp_222145']; ?>" alt="Foto KTP" width="100" height="100">
+                                  <a href="<?= $data['foto_ktp_222145']; ?>" data-lightbox="foto-ktp" data-title="Foto KTP">
+                                    <img src="<?= $data['foto_ktp_222145']; ?>" alt="Foto KTP" width="100" height="100">
                                 </a></td>
                 <td>
                     <div class="d-flex">
