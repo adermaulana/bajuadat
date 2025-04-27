@@ -26,6 +26,10 @@ if($_SESSION['status'] != 'login'){
   <link rel="stylesheet" href="../../assets/dashboard.css">
   <link href="../DataTables/datatables.min.css" rel="stylesheet">
 
+
+            <!-- lightbox -->
+            <link rel="stylesheet" href="../../lightbox/css/lightbox.min.css">
+
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -164,102 +168,31 @@ if($_SESSION['status'] != 'login'){
             </tr>
           </thead>
           <tbody>
+          <?php
+                $no = 1;
+                $tampil = mysqli_query($koneksi, "SELECT * FROM produk_222145");
+                while($data = mysqli_fetch_array($tampil)):
+            ?>
             <tr>
-              <td>1</td>
-              <td>Baju Adat Jawa (Kebaya)</td>
-              <td>Jawa Tengah</td>
-              <td>Rp. 350.000</td>
-              <td>15</td>
-              <td>
-                <img src="../../img/kebaya.png" width="100" alt="Baju Adat Jawa">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=1" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
+                <td><?= $no++ ?></td>
+                <td><?= $data['nama_produk_222145'] ?></td>
+                <td><?= $data['kategori_222145'] ?></td>
+                <td><?= $data['harga_sewa_222145'] ?></td>
+                <td><?= $data['stok_222145'] ?></td>
+                <td>                                
+                                  <a href="<?= $data['gambar_222145']; ?>" data-lightbox="foto-produk" data-title="Foto Produk">
+                                    <img src="<?= $data['gambar_222145']; ?>" alt="Foto Produk" width="100" height="100">
+                                </a></td>
+                <td>
+                    <div class="d-flex">
+                        <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
+                        <a href="" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                    </div>
+                </td>
             </tr>
-            <tr>
-              <td>2</td>
-              <td>Baju Adat Bali</td>
-              <td>Bali</td>
-              <td>Rp. 450.000</td>
-              <td>8</td>
-              <td>
-                <img src="../../img/bali.jpg" width="100" alt="Baju Adat Bali">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=2" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Baju Adat Minang</td>
-              <td>Sumatera Barat</td>
-              <td>Rp. 500.000</td>
-              <td>10</td>
-              <td>
-                <img src="../../img/minang.jpg" width="100" alt="Baju Adat Minang">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=3" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Baju Adat Papua</td>
-              <td>Papua</td>
-              <td>Rp. 400.000</td>
-              <td>5</td>
-              <td>
-                <img src="../../img/bali.jpg" width="100" alt="Baju Adat Papua">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=4" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Baju Adat Betawi</td>
-              <td>Jakarta</td>
-              <td>Rp. 300.000</td>
-              <td>12</td>
-              <td>
-                <img src="../../img/bali.jpg" width="100" alt="Baju Adat Betawi">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=5" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Baju Adat Aceh</td>
-              <td>Aceh</td>
-              <td>Rp. 375.000</td>
-              <td>7</td>
-              <td>
-                <img src="../../img/minang.jpg" width="100" alt="Baju Adat Aceh">
-              </td>
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="index.php?hal=hapus&id=6" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
+            <?php
+                 endwhile; 
+                ?>
           </tbody>
         </table>
       </div>
@@ -268,6 +201,8 @@ if($_SESSION['status'] != 'login'){
   </div>
 </div>
 
+          <!-- lightbox -->
+          <script src="../../lightbox/js/lightbox-plus-jquery.js"></script>
 <!-- Include jQuery -->
 <script src="../DataTables/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
 

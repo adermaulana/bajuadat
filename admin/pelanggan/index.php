@@ -25,6 +25,10 @@ if($_SESSION['status'] != 'login'){
   <link rel="stylesheet" href="../../assets/css/bootstrap.min.css">
   <link rel="stylesheet" href="../../assets/dashboard.css">
   <link href="../DataTables/datatables.min.css" rel="stylesheet">
+
+          <!-- lightbox -->
+          <link rel="stylesheet" href="../../lightbox/css/lightbox.min.css">
+
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <style>
@@ -156,108 +160,36 @@ if($_SESSION['status'] != 'login'){
               <th scope="col">Alamat</th>
               <th scope="col">Telepon</th>
               <th scope="col">Email</th>
+              <th scope="col">Foto KTP</th>
               <th scope="col">Aksi</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>1</td>
-              <td>Anisa Wijayanti</td>
-              <td>Jl. Diponegoro No. 45, Makassar</td>
-              <td>081234567890</td>
-              <td>anisa@gmail.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
+          <?php
+                $no = 1;
+                $tampil = mysqli_query($koneksi, "SELECT * FROM pelanggan_222145");
+                while($data = mysqli_fetch_array($tampil)):
+            ?>
+           <tr>
+                <td><?= $no++ ?></td>
+                <td><?= $data['nama_lengkap_222145'] ?></td>
+                <td><?= $data['alamat_222145'] ?></td>
+                <td><?= $data['no_telp_222145'] ?></td>
+                <td><?= $data['email_222145'] ?></td>
+                <td>                                
+                                  <a href="../uploads/<?= $data['foto_ktp_222145']; ?>" data-lightbox="foto-ktp" data-title="Foto KTP">
+                                    <img src="../uploads/<?= $data['foto_ktp_222145']; ?>" alt="Foto KTP" width="100" height="100">
+                                </a></td>
+                <td>
+                    <div class="d-flex">
+                        <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
+                        <a href="" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                    </div>
+                </td>
             </tr>
-            <tr>
-              <td>2</td>
-              <td>Budi Santoso</td>
-              <td>Jl. Sudirman No. 123, Makassar</td>
-              <td>082345678901</td>
-              <td>budi@yahoo.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Citra Dewi</td>
-              <td>Jl. Ahmad Yani No. 78, Makassar</td>
-              <td>083456789012</td>
-              <td>citra@outlook.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Deni Prakoso</td>
-              <td>Jl. Gatot Subroto No. 45, Makassar</td>
-              <td>084567890123</td>
-              <td>deni@gmail.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Eva Lestari</td>
-              <td>Jl. Pahlawan No. 27, Makassar</td>
-              <td>085678901234</td>
-              <td>eva@hotmail.com</td>
-  
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Ferdi Nugroho</td>
-              <td>Jl. Merdeka No. 55, Makassar</td>
-              <td>086789012345</td>
-              <td>ferdi@gmail.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="6" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Gita Pratiwi</td>
-              <td>Jl. Raya Kertajaya No. 12, Makassar</td>
-              <td>087890123456</td>
-              <td>gita@yahoo.com</td>
-
-              <td>
-                <div class="d-flex">
-                  <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                  <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                </div>
-              </td>
-            </tr>
+            <?php
+                 endwhile; 
+                ?>
           </tbody>
         </table>
       </div>
@@ -266,6 +198,8 @@ if($_SESSION['status'] != 'login'){
   </div>
 </div>
 
+          <!-- lightbox -->
+          <script src="../../lightbox/js/lightbox-plus-jquery.js"></script>
 <!-- Include jQuery -->
 <script src="../DataTables/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
 
@@ -282,5 +216,8 @@ $(document).ready( function () {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
   <script src="../../assets/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="../../assets/dashboard.js"></script>
+
+
+
 </body>
 </html>

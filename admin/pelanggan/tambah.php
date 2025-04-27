@@ -12,6 +12,54 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
+if(isset($_POST['simpan'])) {
+  // Get form data
+  $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+  $password = md5($_POST['password']); // Note: MD5 is not secure, consider using password_hash()
+  $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
+  $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
+  $no_telp = mysqli_real_escape_string($koneksi, $_POST['no_telp']);
+  $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+  
+  // Handle file upload for KTP photo
+  $foto_ktp = '';
+  if(isset($_FILES['foto_ktp']) && $_FILES['foto_ktp']['error'] == 0) {
+      $target_dir = "uploads/";
+      $target_file = $target_dir . basename($_FILES["foto_ktp"]["name"]);
+      move_uploaded_file($_FILES["foto_ktp"]["tmp_name"], $target_file);
+      $foto_ktp = $target_file;
+  }
+  
+  $status_akun = 'aktif'; // Default status
+
+  // Check if username already exists
+  $check = mysqli_query($koneksi, "SELECT * FROM pelanggan_222145 WHERE username_222145 = '$username'");
+  
+  if(mysqli_num_rows($check) > 0) {
+      echo "<script>
+              alert('Username sudah digunakan! Silakan gunakan username lain.');
+              document.location='tambah.php';
+          </script>";
+  } else {
+      // Insert new admin
+      $simpan = mysqli_query($koneksi, "INSERT INTO pelanggan_222145 
+                                      (username_222145, password_222145, nama_lengkap_222145, alamat_222145, no_telp_222145, email_222145, foto_ktp_222145, status_akun_222145) 
+                                      VALUES ('$username', '$password', '$nama_lengkap', '$alamat', '$no_telp', '$email', '$foto_ktp', '$status_akun')");
+
+      if($simpan) {
+          echo "<script>
+                  alert('Pelanggan berhasil ditambahkan!');
+                  document.location='index.php';
+              </script>";
+      } else {
+          echo "<script>
+                  alert('Gagal menambahkan admin!');
+                  document.location='tambah.php';
+              </script>";
+      }
+  }
+}
+
 
 ?>
 
@@ -148,25 +196,37 @@ if($_SESSION['status'] != 'login'){
         </div>
 
         <div class="col-lg-8">
-            <form method="post" class="mb-5" enctype="multipart/form-data">
-                <div class="mb-3">
-                    <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
-                    <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" required autofocus>
-                </div>
-                <div class="mb-3">
-                    <label for="alamat" class="form-label">Alamat</label>
-                    <input type="text" class="form-control" id="alamat" name="alamat" required>
-                </div>
-                <div class="mb-3">
-                    <label for="telepon" class="form-label">Telepon</label>
-                    <input type="tel" class="form-control" id="telepon" name="telepon" required>
-                </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
-                </div>
-                <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn btn">Tambah Data</button>
-            </form>  
+        <form method="post" class="mb-5" enctype="multipart/form-data">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username</label>
+                <input type="text" class="form-control" id="username" name="username" required autofocus>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <div class="mb-3">
+                <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
+                <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" required>
+            </div>
+            <div class="mb-3">
+                <label for="alamat" class="form-label">Alamat</label>
+                <input type="text" class="form-control" id="alamat" name="alamat" required>
+            </div>
+            <div class="mb-3">
+                <label for="no_telp" class="form-label">Nomor Telepon</label>
+                <input type="tel" class="form-control" id="no_telp" name="no_telp" required>
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="foto_ktp" class="form-label">Foto KTP</label>
+                <input type="file" class="form-control" id="foto_ktp" name="foto_ktp">
+            </div>
+            <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn">Tambah Data</button>
+        </form>
         </div>  
     </main>
   </div>

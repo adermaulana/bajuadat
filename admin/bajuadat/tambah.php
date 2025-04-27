@@ -12,30 +12,47 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
-if(isset($_POST['simpan'])){
+if(isset($_POST['simpan'])) {
+  // Get form data
+  $nama_produk = mysqli_real_escape_string($koneksi, $_POST['nama_baju_adat']);
+  $deskripsi = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
+  $kategori = mysqli_real_escape_string($koneksi, $_POST['daerah_asal']);
+  $harga_sewa = mysqli_real_escape_string($koneksi, $_POST['harga_sewa']);
+  $stok = mysqli_real_escape_string($koneksi, $_POST['stok']);
+  $ukuran = implode(", ", $_POST['ukuran']); // Convert array to comma-separated string
+  $kelengkapan = mysqli_real_escape_string($koneksi, $_POST['kelengkapan']);
+  
+  // Handle file upload
+  $gambar = '';
+  if(isset($_FILES['gambar_baju_adat']) && $_FILES['gambar_baju_adat']['error'] == 0) {
+      $target_dir = "uploads/";
+      $target_file = $target_dir . basename($_FILES["gambar_baju_adat"]["name"]);
+      move_uploaded_file($_FILES["gambar_baju_adat"]["tmp_name"], $target_file);
+      $gambar = $target_file;
+  }
+  
+  $status = 'tersedia'; // Default status
 
-  // File upload handling
-  $gambar_material = $_FILES['gambar_material']['name'];
-  $gambar_temp = $_FILES['gambar_material']['tmp_name'];
-  $upload_dir = '../../uploads/'; // Specify your upload directory
+  // Insert query
+  $query = "INSERT INTO produk_222145 
+            (nama_produk_222145, deskripsi_222145, kategori_222145, harga_sewa_222145, 
+             stok_222145, ukuran_222145, gambar_222145, status_222145,kelengkapan_222145) 
+            VALUES ('$nama_produk', '$deskripsi', '$kategori', '$harga_sewa', 
+                    '$stok', '$ukuran', '$gambar', '$status','$kelengkapan')";
 
-  $lokasi_foto="uploads/" . $gambar_material;
-  // Move uploaded file to the specified directory
-  move_uploaded_file($gambar_temp, $upload_dir . $gambar_material);
+  $simpan = mysqli_query($koneksi, $query);
 
-  $simpan = mysqli_query($koneksi, "INSERT INTO data_material (nama_material, deskripsi_material, harga_material, gambar_material) VALUES ('$_POST[nama_material]', '$_POST[deskripsi]', '$_POST[harga]', '$lokasi_foto')");
-
-    if($simpan){
-        echo "<script>
-                alert('Simpan data sukses!');
-                document.location='index.php';
-            </script>";
-    } else {
-        echo "<script>
-                alert('Simpan data Gagal!');
-                document.location='index.php';
-            </script>";
-    }
+  if($simpan) {
+      echo "<script>
+              alert('Produk berhasil ditambahkan!');
+              document.location='index.php';
+          </script>";
+  } else {
+      echo "<script>
+              alert('Gagal menambahkan produk!');
+              document.location='tambah.php';
+          </script>";
+  }
 }
 
 ?>
@@ -176,68 +193,68 @@ if(isset($_POST['simpan'])){
       </div>
 
       <div class="col-lg-8">
-        <form method="post" class="mb-5" enctype="multipart/form-data">
+      <form method="post" class="mb-5" enctype="multipart/form-data">
           <div class="mb-3">
-            <label for="nama_baju_adat" class="form-label">Nama Baju Adat</label>
-            <input type="text" class="form-control" id="nama_baju_adat" name="nama_baju_adat" required autofocus placeholder="Contoh: Baju Adat Jawa">
+              <label for="nama_baju_adat" class="form-label">Nama Baju Adat</label>
+              <input type="text" class="form-control" id="nama_baju_adat" name="nama_baju_adat" required autofocus placeholder="Contoh: Baju Adat Jawa">
           </div>
           <div class="mb-3">
-            <label for="daerah_asal" class="form-label">Daerah Asal</label>
-            <input type="text" class="form-control" id="daerah_asal" name="daerah_asal" placeholder="Contoh: Jawa Tengah">
+              <label for="daerah_asal" class="form-label">Daerah Asal</label>
+              <input type="text" class="form-control" id="daerah_asal" name="daerah_asal" placeholder="Contoh: Jawa Tengah">
           </div>
           <div class="mb-3">
-            <label for="keterangan" class="form-label">Keterangan</label>
-            <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Deskripsikan pakaian adat ini (sejarah, kegunaan, dll)"></textarea>
+              <label for="keterangan" class="form-label">Keterangan</label>
+              <textarea class="form-control" id="keterangan" name="keterangan" rows="3" placeholder="Deskripsikan pakaian adat ini (sejarah, kegunaan, dll)"></textarea>
           </div>
           <div class="row">
-            <div class="col-md-6 mb-3">
-              <label for="harga_sewa" class="form-label">Harga Sewa (per hari)</label>
-              <div class="input-group">
-                <span class="input-group-text">Rp</span>
-                <input type="number" class="form-control" id="harga_sewa" name="harga_sewa" placeholder="Contoh: 350000">
+              <div class="col-md-6 mb-3">
+                  <label for="harga_sewa" class="form-label">Harga Sewa (per hari)</label>
+                  <div class="input-group">
+                      <span class="input-group-text">Rp</span>
+                      <input type="number" class="form-control" id="harga_sewa" name="harga_sewa" placeholder="Contoh: 350000">
+                  </div>
               </div>
-            </div>
-            <div class="col-md-6 mb-3">
-              <label for="stok" class="form-label">Stok</label>
-              <input type="number" class="form-control" id="stok" name="stok" placeholder="Jumlah unit tersedia">
-            </div>
+              <div class="col-md-6 mb-3">
+                  <label for="stok" class="form-label">Stok</label>
+                  <input type="number" class="form-control" id="stok" name="stok" placeholder="Jumlah unit tersedia">
+              </div>
           </div>
           <div class="mb-3">
-            <label for="ukuran" class="form-label">Ukuran Tersedia</label>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="ukuran_s" name="ukuran[]" value="S">
-              <label class="form-check-label" for="ukuran_s">S (Small)</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="ukuran_m" name="ukuran[]" value="M">
-              <label class="form-check-label" for="ukuran_m">M (Medium)</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="ukuran_l" name="ukuran[]" value="L">
-              <label class="form-check-label" for="ukuran_l">L (Large)</label>
-            </div>
-            <div class="form-check">
-              <input class="form-check-input" type="checkbox" id="ukuran_xl" name="ukuran[]" value="XL">
-              <label class="form-check-label" for="ukuran_xl">XL (Extra Large)</label>
-            </div>
+              <label for="ukuran" class="form-label">Ukuran Tersedia</label>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="ukuran_s" name="ukuran[]" value="S">
+                  <label class="form-check-label" for="ukuran_s">S (Small)</label>
+              </div>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="ukuran_m" name="ukuran[]" value="M">
+                  <label class="form-check-label" for="ukuran_m">M (Medium)</label>
+              </div>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="ukuran_l" name="ukuran[]" value="L">
+                  <label class="form-check-label" for="ukuran_l">L (Large)</label>
+              </div>
+              <div class="form-check">
+                  <input class="form-check-input" type="checkbox" id="ukuran_xl" name="ukuran[]" value="XL">
+                  <label class="form-check-label" for="ukuran_xl">XL (Extra Large)</label>
+              </div>
           </div>
           <div class="mb-3">
-            <label for="kelengkapan" class="form-label">Kelengkapan</label>
-            <textarea class="form-control" id="kelengkapan" name="kelengkapan" rows="2" placeholder="Contoh: Atasan, bawahan, selendang, ikat kepala, dll"></textarea>
+              <label for="kelengkapan" class="form-label">Kelengkapan</label>
+              <textarea class="form-control" id="kelengkapan" name="kelengkapan" rows="2" placeholder="Contoh: Atasan, bawahan, selendang, ikat kepala, dll"></textarea>
           </div>
           <div class="mb-3">
-            <label for="gambar_baju_adat" class="form-label">Gambar</label>
-            <input type="file" class="form-control" id="gambar_baju_adat" name="gambar_baju_adat">
-            <div class="form-text">Upload gambar baju adat (format: JPG, PNG. Max: 2MB)</div>
+              <label for="gambar_baju_adat" class="form-label">Gambar</label>
+              <input type="file" class="form-control" id="gambar_baju_adat" name="gambar_baju_adat">
+              <div class="form-text">Upload gambar baju adat (format: JPG, PNG. Max: 2MB)</div>
           </div>
 
           <button type="submit" name="simpan" class="btn btn-success">
-            <i class="fas fa-save me-2"></i>Tambah Baju Adat
+              <i class="fas fa-save me-2"></i>Tambah Baju Adat
           </button>
           <a href="index.php" class="btn btn-secondary ms-2">
-            <i class="fas fa-times me-2"></i>Batal
+              <i class="fas fa-times me-2"></i>Batal
           </a>
-        </form>  
+      </form>
       </div>  
     </div>
   </main>

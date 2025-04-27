@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 21, 2025 at 12:24 AM
+-- Generation Time: Apr 27, 2025 at 04:10 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -80,7 +80,7 @@ CREATE TABLE `pelanggan_222145` (
 --
 
 INSERT INTO `pelanggan_222145` (`pelanggan_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `alamat_222145`, `no_telp_222145`, `email_222145`, `foto_ktp_222145`, `status_akun_222145`) VALUES
-(1, 'pelanggan', '7f78f06d2d1262a0a222ca9834b15d9d', 'pelanggan', 'pelanggan', '08534', 'pelanggan@gmail.com', NULL, 'aktif');
+(4, 'pelanggan', '7f78f06d2d1262a0a222ca9834b15d9d', 'pelanggan', 'pelanggan', '038348', 'pelanggan@gmail.com', '../uploads/Screenshot (2).png', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -132,6 +132,7 @@ CREATE TABLE `produk_222145` (
   `stok_222145` int(11) NOT NULL,
   `ukuran_222145` varchar(20) DEFAULT NULL,
   `gambar_222145` varchar(255) DEFAULT NULL,
+  `kelengkapan_222145` text NOT NULL,
   `status_222145` enum('tersedia','tidak tersedia') DEFAULT 'tersedia'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -192,7 +193,7 @@ ALTER TABLE `produk_222145`
 -- AUTO_INCREMENT for table `admin_222145`
 --
 ALTER TABLE `admin_222145`
-  MODIFY `admin_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `admin_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `detail_pesanan_222145`
@@ -204,7 +205,7 @@ ALTER TABLE `detail_pesanan_222145`
 -- AUTO_INCREMENT for table `pelanggan_222145`
 --
 ALTER TABLE `pelanggan_222145`
-  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `pembayaran_222145`
@@ -222,7 +223,7 @@ ALTER TABLE `pesanan_222145`
 -- AUTO_INCREMENT for table `produk_222145`
 --
 ALTER TABLE `produk_222145`
-  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT;
+  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- Constraints for dumped tables
