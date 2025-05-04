@@ -1,6 +1,6 @@
 </main>
     <footer>
-        <p class="text-center">&copy; 2024 Material Bangunan</p>
+        <p class="text-center">&copy; 2025 Baju Adat</p>
     </footer>
 
     <script src="../assets/js/bootstrap.bundle.js"></script>

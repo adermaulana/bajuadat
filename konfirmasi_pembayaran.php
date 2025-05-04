@@ -1,8 +1,7 @@
-<?php include 'partials/header.php';
+<?php 
+include 'partials/header.php';
 
-// Cek apakah pengguna sudah login
-if (!isset($_SESSION['username_pelanggan'])) {
-    // Jika tidak, redirect ke halaman login dengan pesan alert
+if(!isset($_SESSION['id_pelanggan'])) {
     echo "<script>
     alert('Anda harus login terlebih dahulu!');
     document.location='login_pelanggan.php';
@@ -10,8 +9,106 @@ if (!isset($_SESSION['username_pelanggan'])) {
     exit;
 }
 
+$id_pelanggan = $_SESSION['id_pelanggan'];
+$order_id = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 
+// Get order and customer details
+$query = "SELECT p.*, 
+                 pl.nama_lengkap_222145, 
+                 pl.alamat_222145, 
+                 pl.no_telp_222145, 
+                 pl.email_222145,
+                 GROUP_CONCAT(pr.nama_produk_222145 SEPARATOR ' + ') AS produk,
+                 SUM(dp.sub_total_222145) AS total
+          FROM pesanan_222145 p
+          JOIN pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+          JOIN detail_pesanan_222145 dp ON p.pesanan_id_222145 = dp.pesanan_id_222145
+          JOIN produk_222145 pr ON dp.produk_id_222145 = pr.produk_id_222145
+          WHERE p.pesanan_id_222145 = $order_id
+          AND p.pelanggan_id_222145 = $id_pelanggan
+          GROUP BY p.pesanan_id_222145";
+$result = mysqli_query($koneksi, $query);
 
+if(!$result || mysqli_num_rows($result) == 0) {
+    echo "<script>
+    alert('Pesanan tidak ditemukan!');
+    document.location='pembayaran.php';
+    </script>";
+    exit;
+}
+
+$order = mysqli_fetch_assoc($result);
+
+// Calculate rental duration
+$sewa = new DateTime($order['tanggal_sewa_222145']);
+$kembali = new DateTime($order['tanggal_kembali_222145']);
+$durasi = $sewa->diff($kembali)->format('%a');
+
+// Handle form submission
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
+    $metode_pembayaran = mysqli_real_escape_string($koneksi, $_POST['metode_pembayaran']);
+    $tanggal_pengambilan = mysqli_real_escape_string($koneksi, $_POST['tanggal_pengambilan']);
+    
+    // Handle file upload
+    $bukti_pembayaran = '';
+    if(isset($_FILES['bukti_pembayaran'])) {
+        $file = $_FILES['bukti_pembayaran'];
+        $file_name = $file['name'];
+        $file_tmp = $file['tmp_name'];
+        $file_size = $file['size'];
+        $file_error = $file['error'];
+        
+        // Check if file was uploaded without errors
+        if($file_error === 0) {
+            // Validate file type and size
+            $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+            $max_size = 2 * 1024 * 1024; // 2MB
+            
+            if(in_array($file['type'], $allowed_types) && $file_size <= $max_size) {
+                // Generate unique filename
+                $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
+                $file_new_name = 'bukti_'.$order_id.'_'.time().'.'.$file_ext;
+                $upload_path = 'bukti_pembayaran/'.$file_new_name;
+                
+                if(move_uploaded_file($file_tmp, $upload_path)) {
+                    $bukti_pembayaran = $file_new_name;
+                }
+            }
+        }
+    }
+    
+    // Insert payment data
+    $insert_query = "INSERT INTO pembayaran_222145 (
+        pesanan_id_222145,
+        metode_pembayaran_222145,
+        jumlah_pembayaran_222145,
+        bukti_pembayaran_222145,
+        status_222145,
+        tanggal_pembayaran_222145
+    ) VALUES (
+        $order_id,
+        '$metode_pembayaran',
+        {$order['total']},
+        '$bukti_pembayaran',
+        'menunggu',
+        NOW()
+    )";
+    
+    // Update order status
+    $update_query = "UPDATE pesanan_222145 
+                    SET status_222145 = 'diproses' 
+                    WHERE pesanan_id_222145 = $order_id";
+    
+    if(mysqli_query($koneksi, $insert_query) && mysqli_query($koneksi, $update_query)) {
+        echo "<script>
+        alert('Konfirmasi pembayaran berhasil!');
+        document.location='pembayaran.php';
+        </script>";
+        exit;
+    } else {
+        $error = "Gagal menyimpan konfirmasi pembayaran: ".mysqli_error($koneksi);
+    }
+}
 ?>
 
 <div class="row">
@@ -19,10 +116,10 @@ if (!isset($_SESSION['username_pelanggan'])) {
         <div class="card">
             <div class="card-body">
                 <h4>Data Penyewa</h4>
-                <span>Nama : <b>Anisa Wijayanti</b></span><br>
-                <span>Alamat : <b>Jl. Perintis No. 45, Makassar</b></span><br>
-                <span>Telepon : <b>081234567890</b></span><br>
-                <span>Email : <b>anisa@gmail.com</b></span><br>
+                <span>Nama : <b><?= htmlspecialchars($order['nama_lengkap_222145']) ?></b></span><br>
+                <span>Alamat : <b><?= htmlspecialchars($order['alamat_222145']) ?></b></span><br>
+                <span>Telepon : <b><?= htmlspecialchars($order['no_telp_222145']) ?></b></span><br>
+                <span>Email : <b><?= htmlspecialchars($order['email_222145']) ?></b></span><br>
                 <hr>
                 <span>Terima Kasih Telah Menyewa di Kami</span>
             </div>
@@ -32,31 +129,36 @@ if (!isset($_SESSION['username_pelanggan'])) {
         <div class="card">
             <div class="card-body col-lg-10">
                 <h4>Detail Penyewaan Baju Adat</h4>
+                <?php if(isset($error)): ?>
+                    <div class="alert alert-danger"><?= $error ?></div>
+                <?php endif; ?>
+                
                 <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Baju Adat Jawa (Pria) - L</span>
-                        <span>1 set</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Baju Adat Jawa (Wanita) - M</span>
-                        <span>1 set</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Dekorasi Aksesoris</span>
-                        <span>1 paket</span>
-                    </li>
+                    <?php 
+                    // Get order items
+                    $items_query = "SELECT dp.*, p.nama_produk_222145, p.ukuran_222145
+                                  FROM detail_pesanan_222145 dp
+                                  JOIN produk_222145 p ON dp.produk_id_222145 = p.produk_id_222145
+                                  WHERE dp.pesanan_id_222145 = $order_id";
+                    $items_result = mysqli_query($koneksi, $items_query);
+                    
+                    while($item = mysqli_fetch_assoc($items_result)): ?>
+                        <li class="list-group-item d-flex justify-content-between">
+                            <span><?= htmlspecialchars($item['nama_produk_222145']) ?> - <?= htmlspecialchars($item['ukuran_222145']) ?></span>
+                            <span><?= $item['jumlah_222145'] ?> set</span>
+                        </li>
+                    <?php endwhile; ?>
+                    
                     <li class="list-group-item d-flex justify-content-between">
                         <span>Durasi Sewa</span>
-                        <span>3 Hari</span>
+                        <span><?= $durasi ?> Hari</span>
                     </li>
                 </ul>
                 
-                <form action="" method="post" enctype="multipart/form-data">
-                    <input type="hidden" name="id_order" value="ORD-001">
-                    
+                <form action="" method="post" enctype="multipart/form-data">                    
                     <div class="mb-3">
                         <label class="form-label">Total Pembayaran</label>
-                        <input type="text" name="total_bayar" value="Rp 750.000" class="form-control" readonly>
+                        <input type="text" name="total_bayar" value="Rp <?= number_format($order['total'], 0, ',', '.') ?>" class="form-control" readonly>
                     </div>
                     
                     <div class="mb-3">
@@ -71,7 +173,8 @@ if (!isset($_SESSION['username_pelanggan'])) {
                     
                     <div class="mb-3">
                         <label class="form-label">Tanggal Pengambilan</label>
-                        <input type="date" class="form-control" name="tanggal_pengambilan" required>
+                        <input type="date" class="form-control" name="tanggal_pengambilan" 
+                               min="<?= date('Y-m-d') ?>" required>
                     </div>
                     
                     <div class="mb-3">

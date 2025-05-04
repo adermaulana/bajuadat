@@ -12,7 +12,24 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
-
+$query = "SELECT 
+            p.pesanan_id_222145,
+            pl.nama_lengkap_222145,
+            pl.email_222145,
+            pl.alamat_222145,
+            pl.no_telp_222145,
+            p.total_harga_222145,
+            p.status_222145,
+            p.tanggal_pesanan_222145,
+            p.tanggal_sewa_222145,
+            p.tanggal_kembali_222145
+          FROM 
+            pesanan_222145 p
+          JOIN 
+            pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+          ORDER BY 
+            p.pesanan_id_222145 DESC";
+$result = mysqli_query($koneksi, $query);
 
 ?>
 
@@ -140,197 +157,143 @@ if($_SESSION['status'] != 'login'){
         </div>
       </nav>
 
-<main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
-    <div class="col-lg-12">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Data Penyewaan Baju Adat</h1>
-      </div>
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
+      <div class="col-lg-12">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Data Penyewaan Baju Adat</h1>
+        </div>
 
-      <div class="table-responsive col-lg-12">
-        <table id="myTable" class="table table-striped table-sm mt-3">
-          <thead>
-            <tr>
-              <th scope="col">No</th>
-              <th scope="col">Nama Penyewa</th>
-              <th scope="col">Email</th>
-              <th scope="col">Alamat</th>
-              <th scope="col">Telepon</th>
-              <th scope="col">Total Biaya</th>
-              <th scope="col">Status</th>
-              <th scope="col">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>Anisa Wijayanti</td>
-              <td>anisa@gmail.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>081234567890</td>
-              <td>Rp. 250.000</td>
-              <td>
-                <div class="btn-group" role="group">
-                  <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal1">
-                    Sudah Bayar
-                  </button>
-                  <button type="button" class="btn btn-primary distributor-pilih" data-id="1" data-bs-toggle="modal" data-bs-target="#distributorModal1">
-                    Kirim Baju
-                  </button>
+        <div class="table-responsive col-lg-12">
+          <table id="myTable" class="table table-striped table-sm mt-3">
+            <thead>
+              <tr>
+                <th scope="col">No</th>
+                <th scope="col">Nama Penyewa</th>
+                <th scope="col">Email</th>
+                <th scope="col">Alamat</th>
+                <th scope="col">Telepon</th>
+                <th scope="col">Total Biaya</th>
+                <th scope="col">Status</th>
+                <th scope="col">Aksi</th>
+              </tr>
+            </thead>
+            <tbody>
+              <?php 
+              $no = 1;
+              while($row = mysqli_fetch_assoc($result)): 
+                $formatted_price = "Rp. " . number_format($row['total_harga_222145'], 0, ',', '.');
+              ?>
+                <tr>
+                  <td><?= $no++; ?></td>
+                  <td><?= htmlspecialchars($row['nama_lengkap_222145']); ?></td>
+                  <td><?= htmlspecialchars($row['email_222145']); ?></td>
+                  <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
+                  <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
+                  <td><?= $formatted_price; ?></td>
+                  <td>
+                    <?php
+                    // Dynamic status button based on status value
+                    switch($row['status_222145']) {
+                      case 'Sudah Bayar':
+                        echo '<div class="btn-group" role="group">
+                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                  Sudah Bayar
+                                </button>
+                                <button type="button" class="btn btn-primary distributor-pilih" data-id="'.$row['pesanan_id_222145'].'" data-bs-toggle="modal" data-bs-target="#distributorModal'.$row['pesanan_id_222145'].'">
+                                  Kirim Baju
+                                </button>
+                              </div>';
+                        break;
+                      case 'menunggu':
+                        echo '<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                Pending
+                              </button>';
+                        break;
+                      case 'diproses':
+                        echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                Proses
+                              </button>';
+                        break;
+                      case 'disewa':
+                        echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deliveryModal'.$row['pesanan_id_222145'].'">
+                                Disewa
+                              </button>';
+                        break;
+                      case 'selesai':
+                        echo '<button type="button" class="btn btn-success">
+                                Selesai
+                              </button>';
+                        break;
+                      case 'Return Proses':
+                        echo '<a href="#" class="btn btn-secondary">
+                                Return Proses
+                              </a>';
+                        break;
+                      case 'dibatalkan':
+                        echo '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                Ditolak
+                              </button>';
+                        break;
+                      default:
+                        echo '<button type="button" class="btn btn-secondary">
+                                '.$row['status_222145'].'
+                              </button>';
+                    }
+                    ?>
+                  </td>
+                  <td>
+                    <a href="detail.php?id=<?= $row['pesanan_id_222145']; ?>" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
+                    <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                  </td>
+                </tr>
+
+                <!-- Dynamic Modals for each order -->
+                <div class="modal fade" id="exampleModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="exampleModalLabel">Detail Pesanan #<?= $row['pesanan_id_222145']; ?></h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p><strong>Nama Penyewa:</strong> <?= htmlspecialchars($row['nama_lengkap_222145']); ?></p>
+                        <p><strong>Tanggal Pesan:</strong> <?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></p>
+                        <p><strong>Tanggal Sewa:</strong> <?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></p>
+                        <p><strong>Tanggal Kembali:</strong> <?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></p>
+                        <p><strong>Total Biaya:</strong> <?= $formatted_price; ?></p>
+                        <p><strong>Status:</strong> <?= $row['status_222145']; ?></p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
-              </td>
-              <td>
-                <a href="detail.php" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>Budi Santoso</td>
-              <td>budi@yahoo.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>082345678901</td>
-              <td>Rp. 350.000</td>
-              <td>
-                <button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal2">
-                  Pending
-                </button>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>Citra Dewi</td>
-              <td>citra@outlook.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>083456789012</td>
-              <td>Rp. 500.000</td>
-              <td>
-                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal3">
-                  Proses
-                </button>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>Deni Prakoso</td>
-              <td>deni@gmail.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>084567890123</td>
-              <td>Rp. 275.000</td>
-              <td>
-                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deliveryModal4">
-                  Diantarkan
-                </button>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>Eva Lestari</td>
-              <td>eva@hotmail.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>085678901234</td>
-              <td>Rp. 425.000</td>
-              <td>
-                <button type="button" class="btn btn-success">
-                  Selesai
-                </button>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>Ferdi Nugroho</td>
-              <td>ferdi@gmail.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>086789012345</td>
-              <td>Rp. 300.000</td>
-              <td>
-                <a href="#" class="btn btn-secondary">
-                  Return Proses
-                </a>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>7</td>
-              <td>Gita Pratiwi</td>
-              <td>gita@yahoo.com</td>
-              <td>Jl. Perintis No. 123, Makassar</td>
-              <td>087890123456</td>
-              <td>Rp. 375.000</td>
-              <td>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal7">
-                  Ditolak
-                </button>
-              </td>
-              <td>
-                <a href="#" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
 
-  <!-- Example Modal -->
-  <div class="modal fade" id="exampleModal1" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="exampleModalLabel">Konfirmasi Pembayaran</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Total Bayar: Rp. 250.000</p>
-          <img src="/api/placeholder/400/320" alt="Bukti Pembayaran" style="max-width: 100%;">
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Konfirmasi</button>
-          <button type="button" class="btn btn-danger" data-bs-dismiss="modal">Tolak</button>
+                <!-- Delivery Modal -->
+                <div class="modal fade" id="deliveryModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
+                  <div class="modal-dialog">
+                    <div class="modal-content">
+                      <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="deliveryModalLabel">Konfirmasi Pengiriman Selesai</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                      </div>
+                      <div class="modal-body">
+                        <p>Apakah pengiriman pesanan #<?= $row['pesanan_id_222145']; ?> sudah selesai dan baju adat sudah diterima oleh penyewa?</p>
+                      </div>
+                      <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Konfirmasi Selesai</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              <?php endwhile; ?>
+            </tbody>
+          </table>
         </div>
       </div>
-    </div>
-  </div>
-
-
-  <!-- Delivery Modal -->
-  <div class="modal fade" id="deliveryModal4" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h1 class="modal-title fs-5" id="deliveryModalLabel">Konfirmasi Pengiriman Selesai</h1>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Apakah pengiriman sudah selesai dan baju adat sudah diterima oleh penyewa?</p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-          <button type="button" class="btn btn-success" data-bs-dismiss="modal">Konfirmasi Selesai</button>
-        </div>
-      </div>
-    </div>
-  </div>
+    </main>
   </div>
 </div>
 

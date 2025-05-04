@@ -1,158 +1,219 @@
-<?php include 'partials/header.php';
+<?php
+include 'partials/header.php';
 
-// Cek apakah pengguna sudah login
-if (!isset($_SESSION['username_pelanggan'])) {
-    // Jika tidak, redirect ke halaman login dengan pesan alert
-    echo "<script>
-    alert('Anda harus login terlebih dahulu!');
-    document.location='login_pelanggan.php';
-    </script>";
-    exit;
+
+if(!isset($_SESSION['id_pelanggan'])) {
+    header("Location: login_pelanggan.php");
+    exit();
 }
 
 $id_pelanggan = $_SESSION['id_pelanggan'];
 
-if(isset($_GET['hal'])){
-    if($_GET['hal'] == "checkout"){
-        $tampil = mysqli_query($koneksi, "SELECT * FROM data_pelanggan WHERE id_pelanggan = '$_GET[id]'");
-        $data = mysqli_fetch_array($tampil);
-        if($data){
-            $nama_pelanggan = $data['nama_pelanggan'];
-            $alamat = $data['alamat_pelanggan'];
-            $email = $data['email_pelanggan'];
-            $telepon = $data['telepon_pelanggan'];
-        }
-    }
+// Get customer data
+$customer_query = "SELECT * FROM pelanggan_222145 WHERE pelanggan_id_222145 = $id_pelanggan";
+$customer_result = mysqli_query($koneksi, $customer_query);
+$customer = mysqli_fetch_assoc($customer_result);
+
+// Get cart items
+$cart_query = "SELECT k.*, p.nama_produk_222145, p.gambar_222145, p.harga_sewa_222145
+               FROM keranjang_222145 k
+               JOIN produk_222145 p ON k.produk_id_222145 = p.produk_id_222145
+               WHERE k.pelanggan_id_222145 = $id_pelanggan";
+$cart_result = mysqli_query($koneksi, $cart_query);
+
+// Calculate totals
+$subtotal = 0;
+$ongkir = 50000; // Flat shipping rate
+$cart_items = [];
+while($item = mysqli_fetch_assoc($cart_result)) {
+    $item_total = $item['harga_sewa_222145'] * $item['jumlah_hari_222145'];
+    $subtotal += $item_total;
+    $cart_items[] = $item;
 }
 
-if(isset($_POST['simpan'])){
-    // Simpan data ke tabel data_order
-    $simpan_order = mysqli_query($koneksi, "INSERT INTO data_order (nama_order, email_order, alamat_order, telepon_order, id_pelanggan, total_order, status_order ) VALUES ('$_POST[nama]','$_POST[email]','$_POST[alamat]','$_POST[telepon]','$id_pelanggan','$_POST[total_order]','$_POST[status_order]')");
+$grand_total = $subtotal + $ongkir;
 
-    if($simpan_order){
-        // Ambil ID order yang baru dibuat
-        $id_order = mysqli_insert_id($koneksi);
-
-        // Ambil data dari keranjang
-        $query_cart = mysqli_query($koneksi, "SELECT * FROM data_keranjang WHERE id_pelanggan = '$id_pelanggan'");
+// Handle form submission
+if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
+    // Create order
+    $tanggal_pesanan = date('Y-m-d H:i:s');
+    $tanggal_sewa = $_POST['tanggal_sewa'];
+    $tanggal_kembali = $_POST['tanggal_kembali'];
+    $catatan = mysqli_real_escape_string($koneksi, $_POST['catatan']);
+    
+    $order_query = "INSERT INTO pesanan_222145 (
+        pelanggan_id_222145,
+        tanggal_pesanan_222145,
+        tanggal_sewa_222145,
+        tanggal_kembali_222145,
+        total_harga_222145,
+        status_222145,
+        catatan_222145
+    ) VALUES (
+        $id_pelanggan,
+        '$tanggal_pesanan',
+        '$tanggal_sewa',
+        '$tanggal_kembali',
+        $grand_total,
+        'menunggu',
+        '$catatan'
+    )";
+    
+    if(mysqli_query($koneksi, $order_query)) {
+        $order_id = mysqli_insert_id($koneksi);
         
-        // Simpan data ke tabel data_order_item
-        while($cart_data = mysqli_fetch_assoc($query_cart)) {
-            $material_id = $cart_data['id_material']; // Changed obat_id to material_id
-            $banyak = $cart_data['jumlah_keranjang'];
-            
-            $simpan_order_item = mysqli_query($koneksi, "INSERT INTO data_order_item (id_pelanggan,id_order, id_material, jumlah_order_item) VALUES ('$id_pelanggan','$id_order', '$material_id', '$banyak')"); // Changed id_obat to id_material
-            
-            if(!$simpan_order_item) {
-                echo "<script>
-                        alert('Simpan data order item Gagal!');
-                        document.location='index.php';
-                    </script>";
-                exit;
-            }
+        // Move items from cart to order details
+        foreach($cart_items as $item) {
+            $detail_query = "INSERT INTO detail_pesanan_222145 (
+                pesanan_id_222145,
+                produk_id_222145,
+                jumlah_222145,
+                harga_satuan_222145,
+                sub_total_222145
+            ) VALUES (
+                $order_id,
+                {$item['produk_id_222145']},
+                {$item['jumlah_hari_222145']},
+                {$item['harga_sewa_222145']},
+                " . ($item['harga_sewa_222145'] * $item['jumlah_hari_222145']) . "
+            )";
+            mysqli_query($koneksi, $detail_query);
         }
-
-        // Hapus data dari keranjang setelah simpan ke data_order_item
-        $hapus_cart = mysqli_query($koneksi, "DELETE FROM data_keranjang WHERE id_pelanggan = '$id_pelanggan'");
         
-        if($hapus_cart) {
-            echo "<script>
-                    alert('Simpan data sukses!');
-                    document.location='pembayaran.php';
-                </script>";
-        } else {
-            echo "<script>
-                    alert('Simpan data sukses, tetapi hapus data keranjang Gagal!');
-                    document.location='index.php';
-                </script>";
-        }
+        // Clear cart
+        $clear_cart = "DELETE FROM keranjang_222145 WHERE pelanggan_id_222145 = $id_pelanggan";
+        mysqli_query($koneksi, $clear_cart);
+        
+        // Redirect to payment page
+        header("Location: pembayaran.php?order_id=$order_id");
+        exit();
     } else {
-        echo "<script>
-                alert('Simpan data Gagal!');
-                document.location='index.php';
-            </script>";
+        $error = "Error creating order: " . mysqli_error($koneksi);
     }
 }
-
-
 ?>
 
 <div class="container mt-5">
-    <h2 class="mb-4">Checkout</h2>
-    <form action="" method="post">
+    <h2 class="mb-4">Checkout Penyewaan Baju Adat</h2>
+    
+    <?php if(empty($cart_items)): ?>
+        <div class="alert alert-warning">
+            Keranjang belanja Anda kosong. Silakan tambahkan produk terlebih dahulu.
+        </div>
+        <a href="bajuadat.php" class="btn btn-primary">Kembali ke Toko</a>
+    <?php else: ?>
+        <?php if(isset($error)): ?>
+            <div class="alert alert-danger"><?= $error ?></div>
+        <?php endif; ?>
+        
         <div class="row">
-            <div class="col-md-6">
-                <div class="card">
+            <div class="col-md-8">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Data Penyewa</h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Detail</h5>
-                        <input type="hidden" name="pelanggan_id" value="<?= $id_pelanggan ?>">
-                            <div class="mb-3 col-md-8">
-                                <label class="form-label">Nama<span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="nama" value="<?= $nama_pelanggan ?>" required>
+                        <form method="post">
+                            <div class="mb-3">
+                                <label class="form-label">Nama Lengkap</label>
+                                <input type="text" class="form-control" value="<?= htmlspecialchars($customer['nama_lengkap_222145']) ?>" readonly>
                             </div>
-                            <div class="mb-3 col-md-8">
-                                <label class="form-label">Alamat<span class="text-danger">*</span></label>
-                                <input type="text" class="form-control" name="alamat" value="<?= $alamat ?>" required>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" value="<?= htmlspecialchars($customer['email_222145']) ?>" readonly>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label">Telepon</label>
+                                    <input type="text" class="form-control" value="<?= htmlspecialchars($customer['no_telp_222145']) ?>" readonly>
+                                </div>
                             </div>
-                            <div class="mb-3 col-md-8">
-                                <label class="form-label">Email<span class="text-danger">*</span></label>
-                                <input type="email" class="form-control" name="email" value="<?= $email ?>" required>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Alamat Lengkap</label>
+                                <textarea class="form-control" rows="3" readonly><?= htmlspecialchars($customer['alamat_222145']) ?></textarea>
                             </div>
-                            <div class="mb-3 col-md-8">
-                                <label class="form-label">Telepon<span class="text-danger">*</span></label>
-                                <input type="number" class="form-control" name="telepon" value="<?= $telepon ?>" required> <!-- Fixed typo 'nujmber' -->
+                            
+                            <hr>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="tanggal_sewa" class="form-label">Tanggal Sewa</label>
+                                    <input type="date" class="form-control" id="tanggal_sewa" name="tanggal_sewa" required min="<?= date('Y-m-d') ?>">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
+                                    <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali" required>
+                                </div>
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="catatan" class="form-label">Catatan (Opsional)</label>
+                                <textarea class="form-control" id="catatan" name="catatan" rows="2"></textarea>
                             </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
+            
+            <div class="col-md-4">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">Ringkasan Pesanan</h5>
+                    </div>
                     <div class="card-body">
-                        <h5 class="card-title">Pesanan</h5>
-                        <table class="table mt-3">
-                            <thead>
-                                <tr>
-                                    <th>Material</th> <!-- Changed Produk to Material -->
-                                    <th>Harga</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                            <?php
-                                $tampil = mysqli_query($koneksi, "SELECT k.*, m.nama_material, m.gambar_material
-                                FROM data_keranjang k
-                                JOIN data_material m ON k.id_material = m.id_material
-                                WHERE id_pelanggan = $id_pelanggan ORDER BY id_keranjang DESC");
-
-                                while($data = mysqli_fetch_array($tampil)):
-                            ?>
-                                <tr>
-                                    <td><?= $data['nama_material'] ?> x <?= $data['jumlah_keranjang'] ?></td> <!-- Changed nama_obat to nama_material -->
-                                    <td>Rp. <?= number_format($data['total_keranjang'],0,',','.'); ?></td>
-                                </tr>
-                                <?php endwhile; ?>
-                            </tbody>
-                            <tfoot>
-                                <?php 
-                                $keranjang = "SELECT SUM(total_keranjang) as total_harga_keranjang FROM data_keranjang WHERE id_pelanggan = $id_pelanggan";
-
-                                $resultkeranjang = $koneksi->query($keranjang);
-                                $rowkeranjang = $resultkeranjang->fetch_assoc();
-                                $total_keranjang = $rowkeranjang["total_harga_keranjang"];
-                                ?>
-                                <tr>
-                                    <th>Total Harga</th>
-                                    <td>Rp. <?= number_format($total_keranjang,0,',','.'); ?></td>
-                                </tr>
-                            </tfoot>
-                        </table>        
+                        <h6 class="mb-3">Produk Disewa:</h6>
+                        <ul class="list-group mb-3">
+                            <?php foreach($cart_items as $item): ?>
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                    <?= htmlspecialchars($item['nama_produk_222145']) ?>
+                                    <span>Rp <?= number_format($item['harga_sewa_222145'] * $item['jumlah_hari_222145'], 0, ',', '.') ?></span>
+                                </li>
+                            <?php endforeach; ?>
+                        </ul>
+                        
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Subtotal:
+                                <span>Rp <?= number_format($subtotal, 0, ',', '.') ?></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                Biaya Pengiriman:
+                                <span>Rp <?= number_format($ongkir, 0, ',', '.') ?></span>
+                            </li>
+                            <li class="list-group-item d-flex justify-content-between align-items-center fw-bold fs-5">
+                                Total Pembayaran:
+                                <span>Rp <?= number_format($grand_total, 0, ',', '.') ?></span>
+                            </li>
+                        </ul>
+                        
+                        <button type="submit" name="checkout" class="btn btn-success w-100 mt-3 py-2">
+                            <i class="fas fa-credit-card me-2"></i> Lanjut ke Pembayaran
+                        </button>
+                        </form>
                     </div>
                 </div>
-                <input type="hidden" name="total_order" value="<?= $total_keranjang ?>">
-                <input type="hidden" name="status_order" value="Belum Bayar">
-                <button type="submit" name="simpan" class="btn btn-primary mt-3">Order</button>
             </div>
         </div>
-    </form>
+    <?php endif; ?>
 </div>
+
+<script>
+// Set minimum return date based on rental date
+document.getElementById('tanggal_sewa').addEventListener('change', function() {
+    const sewaDate = new Date(this.value);
+    const kembaliInput = document.getElementById('tanggal_kembali');
+    
+    // Set min return date to 1 day after rental date
+    sewaDate.setDate(sewaDate.getDate() + 1);
+    const minReturnDate = sewaDate.toISOString().split('T')[0];
+    kembaliInput.min = minReturnDate;
+    
+    // If current return date is before new min date, reset it
+    if(kembaliInput.value && new Date(kembaliInput.value) < sewaDate) {
+        kembaliInput.value = minReturnDate;
+    }
+});
+</script>
 
 <?php include 'partials/footer.php'; ?>

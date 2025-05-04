@@ -12,7 +12,59 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
+// Get order ID from URL parameter
+$order_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
+// Query to fetch order details with customer information
+$query = "SELECT 
+            p.*,
+            pl.nama_lengkap_222145,
+            pl.alamat_222145,
+            pl.email_222145,
+            pl.no_telp_222145,
+            pb.metode_pembayaran_222145,
+            pb.jumlah_pembayaran_222145,
+            pb.status_222145 as status_pembayaran,
+            pb.bukti_pembayaran_222145
+          FROM 
+            pesanan_222145 p
+          JOIN 
+            pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+          LEFT JOIN
+            pembayaran_222145 pb ON p.pesanan_id_222145 = pb.pesanan_id_222145
+          WHERE 
+            p.pesanan_id_222145 = $order_id";
+$result = mysqli_query($koneksi, $query);
+
+if(mysqli_num_rows($result) == 0) {
+    header("location:index.php");
+    exit();
+}
+
+$order = mysqli_fetch_assoc($result);
+
+// Query to fetch order items
+$items_query = "SELECT 
+                  dp.*,
+                  p.nama_produk_222145,
+                  p.ukuran_222145
+                FROM 
+                  detail_pesanan_222145 dp
+                JOIN 
+                  produk_222145 p ON dp.produk_id_222145 = p.produk_id_222145
+                WHERE 
+                  dp.pesanan_id_222145 = $order_id";
+$items_result = mysqli_query($koneksi, $items_query);
+
+// Format date
+$tanggal_pesanan = date('d F Y', strtotime($order['tanggal_pesanan_222145']));
+$tanggal_sewa = date('d F Y', strtotime($order['tanggal_sewa_222145']));
+$tanggal_kembali = date('d F Y', strtotime($order['tanggal_kembali_222145']));
+
+// Format currency
+function format_rupiah($angka) {
+    return 'Rp ' . number_format($angka, 0, ',', '.');
+}
 ?>
 
 <!DOCTYPE html>
@@ -140,81 +192,176 @@ if($_SESSION['status'] != 'login'){
         </div>
       </nav>
 
-  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
-    <div class="col-lg-12">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h2>Detail Penyewaan Baju Adat</h2>
-      </div>
-      
-      <a class="btn btn-success mb-3" href="index.php">Kembali</a>
-      
-      <div class="card mb-3 col-md-6">
-        <div class="card-body">
-          <div>
-            <h6>Data Diri Penyewa:</h6>
-            <span>Nama: Anisa Wijayanti</span><br>
-            <span>Alamat: Jl. Diponegoro No. 45, Jakarta</span><br>
-            <span>Email: anisa@gmail.com</span><br>
-            <p>Telepon: 081234567890</p>
+      <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+      <div class="col-lg-12">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h2>Detail Penyewaan Baju Adat</h2>
+          <div class="btn-toolbar mb-2 mb-md-0">
+            <a class="btn btn-success" href="index.php">
+              <i class="fas fa-arrow-left me-1"></i> Kembali
+            </a>
           </div>
-
-          <h5 class="card-title">ID Penyewaan: RNT-2025041301</h5>
-          <p>Tanggal Sewa: 10 April 2025</p>
-          <p>Tanggal Kembali: 15 April 2025</p>
-
-          <table class="table">
-            <thead>
-              <tr>
-                <th>Nama Baju Adat</th>
-                <th>Ukuran</th>
-                <th>Durasi (Hari)</th>
-                <th>Biaya Sewa</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Kebaya Jawa Klasik</td>
-                <td>M</td>
-                <td>5</td>
-                <td>Rp 150.000</td>
-              </tr>
-              <tr>
-                <td>Beskap Jawa</td>
-                <td>L</td>
-                <td>5</td>
-                <td>Rp 100.000</td>
-              </tr>
-              <tr>
-                <td>Aksesoris Pengantin (Set)</td>
-                <td>Standard</td>
-                <td>5</td>
-                <td>Rp 50.000</td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div class="mt-3">
-            <h5>Grand Total: Rp 300.000</h5>
+        </div>
+        
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">ID Penyewaan: RNT-<?= str_pad($order['pesanan_id_222145'], 5, '0', STR_PAD_LEFT) ?></h5>
           </div>
-          
-          <div class="mt-4">
-            <h6>Informasi Tambahan:</h6>
+          <div class="card-body">
             <div class="row">
               <div class="col-md-6">
-                <p><strong>Status Penyewaan:</strong> <span class="badge bg-success">Sudah Bayar</span></p>
-                <p><strong>Metode Pembayaran:</strong> Transfer Bank</p>
-                <p><strong>Jaminan:</strong> KTP</p>
+                <h6>Data Diri Penyewa:</h6>
+                <p><strong>Nama:</strong> <?= htmlspecialchars($order['nama_lengkap_222145']) ?></p>
+                <p><strong>Alamat:</strong> <?= htmlspecialchars($order['alamat_222145']) ?></p>
+                <p><strong>Email:</strong> <?= htmlspecialchars($order['email_222145']) ?></p>
+                <p><strong>Telepon:</strong> <?= htmlspecialchars($order['no_telp_222145']) ?></p>
               </div>
               <div class="col-md-6">
-                <p><strong>Kondisi Barang:</strong> Baik</p>
-                <p><strong>Catatan:</strong> Penggunaan untuk acara pernikahan</p>
+                <h6>Informasi Penyewaan:</h6>
+                <p><strong>Tanggal Pesan:</strong> <?= $tanggal_pesanan ?></p>
+                <p><strong>Tanggal Sewa:</strong> <?= $tanggal_sewa ?></p>
+                <p><strong>Tanggal Kembali:</strong> <?= $tanggal_kembali ?></p>
+                <p><strong>Durasi:</strong> 
+                  <?php 
+                    $datetime1 = new DateTime($order['tanggal_sewa_222145']);
+                    $datetime2 = new DateTime($order['tanggal_kembali_222145']);
+                    $interval = $datetime1->diff($datetime2);
+                    echo $interval->format('%a hari');
+                  ?>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Detail Barang Disewa</h5>
+          </div>
+          <div class="card-body">
+            <div class="table-responsive">
+              <table class="table table-bordered">
+                <thead class="table-light">
+                  <tr>
+                    <th>No</th>
+                    <th>Nama Produk</th>
+                    <th>Ukuran</th>
+                    <th>Jumlah</th>
+                    <th>Harga Satuan</th>
+                    <th>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php 
+                  $no = 1;
+                  $total = 0;
+                  while($item = mysqli_fetch_assoc($items_result)): 
+                    $subtotal = $item['jumlah_222145'] * $item['harga_satuan_222145'];
+                    $total += $subtotal;
+                  ?>
+                    <tr>
+                      <td><?= $no++ ?></td>
+                      <td><?= htmlspecialchars($item['nama_produk_222145']) ?></td>
+                      <td><?= htmlspecialchars($item['ukuran_222145']) ?></td>
+                      <td><?= $item['jumlah_222145'] ?></td>
+                      <td><?= format_rupiah($item['harga_satuan_222145']) ?></td>
+                      <td><?= format_rupiah($subtotal) ?></td>
+                    </tr>
+                  <?php endwhile; ?>
+                  <tr>
+                    <td colspan="5" class="text-end"><strong>Total</strong></td>
+                    <td><strong><?= format_rupiah($total) ?></strong></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="card mb-4">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Informasi Pembayaran</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Status Pembayaran:</strong> 
+                  <?php 
+                  $status_class = '';
+                  switch($order['status_pembayaran']) {
+                    case 'Sudah Bayar':
+                      $status_class = 'bg-success';
+                      break;
+                    case 'menunggu':
+                      $status_class = 'bg-warning';
+                      break;
+                    case 'ditolak':
+                      $status_class = 'bg-danger';
+                      break;
+                    default:
+                      $status_class = 'bg-secondary';
+                  }
+                  ?>
+                  <span class="badge <?= $status_class ?>"><?= $order['status_pembayaran'] ?? 'Belum Dibayar' ?></span>
+                </p>
+                <p><strong>Metode Pembayaran:</strong> <?= $order['metode_pembayaran_222145'] ?? '-' ?></p>
+                <p><strong>Jumlah Pembayaran:</strong> <?= isset($order['jumlah_pembayaran_222145']) ? format_rupiah($order['jumlah_pembayaran_222145']) : '-' ?></p>
+              </div>
+              <div class="col-md-6">
+                <?php if(!empty($order['bukti_pembayaran_222145'])): ?>
+                  <p><strong>Bukti Pembayaran:</strong></p>
+                  <img src="../../bukti_pembayaran/<?= $order['bukti_pembayaran_222145'] ?>" alt="Bukti Pembayaran" class="payment-proof" style="max-width: 300px;">
+                <?php endif; ?>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header bg-primary text-white">
+            <h5 class="mb-0">Informasi Tambahan</h5>
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-6">
+                <p><strong>Status Penyewaan:</strong> 
+                  <?php 
+                  $status_class = '';
+                  switch($order['status_222145']) {
+                    case 'Sudah Bayar':
+                      $status_class = 'bg-success';
+                      break;
+                    case 'menunggu':
+                      $status_class = 'bg-warning';
+                      break;
+                    case 'diproses':
+                      $status_class = 'bg-info';
+                      break;
+                    case 'Diantarkan':
+                      $status_class = 'bg-primary';
+                      break;
+                    case 'selesai':
+                      $status_class = 'bg-success';
+                      break;
+                    case 'ditolak':
+                      $status_class = 'bg-danger';
+                      break;
+                    default:
+                      $status_class = 'bg-secondary';
+                  }
+                  ?>
+                  <span class="badge <?= $status_class ?>"><?= $order['status_222145'] ?></span>
+                </p>
+              </div>
+              <div class="col-md-6">
+                <p><strong>Catatan:</strong> <?= !empty($order['catatan_222145']) ? htmlspecialchars($order['catatan_222145']) : 'Tidak ada catatan' ?></p>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </main>
+  </div>
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
