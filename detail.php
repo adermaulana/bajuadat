@@ -4,7 +4,6 @@ include 'partials/header.php';
 
 // Handle add to cart
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
-
     if(!isset($_SESSION['id_pelanggan'])) {
         header("Location: login_pelanggan.php");
         exit();
@@ -15,40 +14,55 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
     $jumlah_hari = $_POST['jumlah_hari'];
     $ukuran = $_POST['ukuran'];
     
-    // Get product price
-    $query = "SELECT harga_sewa_222145 FROM produk_222145 WHERE produk_id_222145 = $produk_id";
-    $result = mysqli_query($koneksi, $query);
-    $produk = mysqli_fetch_assoc($result);
-    $harga_satuan = $produk['harga_sewa_222145'];
-    $sub_total = $harga_satuan * $jumlah_hari;
+    // Cek stok tersedia
+    $stok_query = "SELECT stok_222145 FROM ukuran_produk_222145 
+                  WHERE produk_id_222145 = $produk_id AND ukuran_222145 = '$ukuran'";
+    $stok_result = mysqli_query($koneksi, $stok_query);
+    $stok_data = mysqli_fetch_assoc($stok_result);
     
-    // Insert into keranjang_222145 table
-    $insert_query = "INSERT INTO keranjang_222145 (
-        pelanggan_id_222145,
-        produk_id_222145,
-        jumlah_hari_222145,
-        ukuran_222145,
-        harga_satuan_222145,
-        sub_total_222145
-    ) VALUES (
-        $pelanggan_id,
-        $produk_id,
-        $jumlah_hari,
-        '$ukuran',
-        $harga_satuan,
-        $sub_total
-    )";
-    
-    if(mysqli_query($koneksi, $insert_query)) {
-        $success_message = "Produk berhasil ditambahkan ke keranjang!";
+    if($stok_data && $stok_data['stok_222145'] > 0) {
+        // Get product price
+        $query = "SELECT harga_sewa_222145 FROM produk_222145 WHERE produk_id_222145 = $produk_id";
+        $result = mysqli_query($koneksi, $query);
+        $produk = mysqli_fetch_assoc($result);
+        $harga_satuan = $produk['harga_sewa_222145'];
+        $sub_total = $harga_satuan * $jumlah_hari;
+        
+        // Insert into keranjang_222145 table
+        $insert_query = "INSERT INTO keranjang_222145 (
+            pelanggan_id_222145,
+            produk_id_222145,
+            jumlah_hari_222145,
+            ukuran_222145,
+            harga_satuan_222145,
+            sub_total_222145
+        ) VALUES (
+            $pelanggan_id,
+            $produk_id,
+            $jumlah_hari,
+            '$ukuran',
+            $harga_satuan,
+            $sub_total
+        )";
+        
+        if(mysqli_query($koneksi, $insert_query)) {
+            $success_message = "Produk berhasil ditambahkan ke keranjang!";
+        } else {
+            $error_message = "Gagal menambahkan produk: " . mysqli_error($koneksi);
+        }
     } else {
-        $error_message = "Gagal menambahkan produk: " . mysqli_error($koneksi);
+        $error_message = "Stok untuk ukuran ini habis atau tidak tersedia";
     }
 }
 
 // Get product details
 $produk_id = $_GET['id'] ?? 0;
-$query = "SELECT * FROM produk_222145 WHERE produk_id_222145 = $produk_id";
+$query = "SELECT p.*, 
+                 GROUP_CONCAT(CONCAT(u.ukuran_222145, ':', u.stok_222145)) AS stok_ukuran
+          FROM produk_222145 p
+          LEFT JOIN ukuran_produk_222145 u ON p.produk_id_222145 = u.produk_id_222145
+          WHERE p.produk_id_222145 = $produk_id
+          GROUP BY p.produk_id_222145";
 $result = mysqli_query($koneksi, $query);
 $produk = mysqli_fetch_assoc($result);
 
@@ -71,7 +85,17 @@ if(!$produk) {
                     <h1 class="card-title"><?= htmlspecialchars($produk['nama_produk_222145']) ?></h1>
                     <div class="d-flex align-items-center mb-3">
                         <span class="badge bg-primary me-2"><?= htmlspecialchars($produk['kategori_222145']) ?></span>
-                        <small class="text-muted">Tersedia: <?= htmlspecialchars($produk['stok_222145']) ?> set</small>
+                        <?php 
+                        if(!empty($produk['stok_ukuran'])) {
+                            $stok_ukuran = explode(",", $produk['stok_ukuran']);
+                            foreach($stok_ukuran as $stok) {
+                                list($ukuran, $jumlah) = explode(":", $stok);
+                                echo "<span class='badge bg-secondary me-2'>$ukuran: $jumlah</span>";
+                            }
+                        } else {
+                            echo "<small class='text-muted'>Stok kosong</small>";
+                        }
+                        ?>
                     </div>
                     
                     <p class="card-text mt-2">
@@ -93,7 +117,6 @@ if(!$produk) {
                                 <li><?= htmlspecialchars(trim($item)) ?></li>
                             <?php endif;
                         endforeach; ?>
-                        <li>Ukuran: <?= htmlspecialchars($produk['ukuran_222145']) ?></li>
                         <li>Kondisi: <?= htmlspecialchars($produk['status_222145']) ?></li>
                     </ul>
                     
@@ -126,21 +149,28 @@ if(!$produk) {
                             </div>
                             <div class="col-auto">
                                 <select class="form-select" id="ukuran" name="ukuran" style="width: 100px;" required>
-                                    <option value="">Pilih</option>
+                                    <option value="">Pilih Ukuran</option>
                                     <?php 
-                                    $ukuran_options = explode(",", $produk['ukuran_222145']);
-                                    foreach($ukuran_options as $option): 
-                                        $option = trim($option);
-                                        if($option): ?>
-                                            <option value="<?= htmlspecialchars($option) ?>"><?= htmlspecialchars($option) ?></option>
-                                        <?php endif;
-                                    endforeach; ?>
+                                    if(!empty($produk['stok_ukuran'])) {
+                                        $stok_ukuran = explode(",", $produk['stok_ukuran']);
+                                        foreach($stok_ukuran as $stok) {
+                                            list($ukuran, $jumlah) = explode(":", $stok);
+                                            if($jumlah > 0) {
+                                                echo "<option value='$ukuran'>$ukuran (Tersedia: $jumlah)</option>";
+                                            } else {
+                                                echo "<option value='$ukuran' disabled>$ukuran (Habis)</option>";
+                                            }
+                                        }
+                                    } else {
+                                        echo "<option disabled>Stok kosong</option>";
+                                    }
+                                    ?>
                                 </select>
                             </div>
                         </div>
                         
                         <div class="mt-4">
-                            <button type="submit" name="add_to_cart" class="btn btn-success btn-lg px-4">
+                            <button type="submit" name="add_to_cart" class="btn btn-success btn-lg px-4" <?= (empty($produk['stok_ukuran'])) ? 'disabled' : '' ?>>
                                 <i class="bi bi-cart-plus me-2"></i> Tambah ke Keranjang
                             </button>
                         </div>
@@ -172,6 +202,16 @@ if(!$produk) {
     .alert {
         margin-top: 15px;
     }
+
+    .badge {
+        font-size: 0.85rem;
+        padding: 0.35em 0.65em;
+        font-weight: 500;
+    }
+    .badge.bg-secondary {
+        background-color: #6c757d !important;
+    }
+
 </style>
 
 <?php include 'partials/footer.php'; ?>

@@ -13,13 +13,11 @@ if($_SESSION['status'] != 'login'){
 }
 
 if(isset($_POST['simpan'])) {
-  // Get form data
+  // Data produk utama
   $nama_produk = mysqli_real_escape_string($koneksi, $_POST['nama_baju_adat']);
   $deskripsi = mysqli_real_escape_string($koneksi, $_POST['keterangan']);
   $kategori = mysqli_real_escape_string($koneksi, $_POST['daerah_asal']);
   $harga_sewa = mysqli_real_escape_string($koneksi, $_POST['harga_sewa']);
-  $stok = mysqli_real_escape_string($koneksi, $_POST['stok']);
-  $ukuran = implode(", ", $_POST['ukuran']); // Convert array to comma-separated string
   $kelengkapan = mysqli_real_escape_string($koneksi, $_POST['kelengkapan']);
   
   // Handle file upload
@@ -33,16 +31,30 @@ if(isset($_POST['simpan'])) {
   
   $status = 'tersedia'; // Default status
 
-  // Insert query
+  // Insert produk utama
   $query = "INSERT INTO produk_222145 
             (nama_produk_222145, deskripsi_222145, kategori_222145, harga_sewa_222145, 
-             stok_222145, ukuran_222145, gambar_222145, status_222145,kelengkapan_222145) 
+             gambar_222145, status_222145, kelengkapan_222145) 
             VALUES ('$nama_produk', '$deskripsi', '$kategori', '$harga_sewa', 
-                    '$stok', '$ukuran', '$gambar', '$status','$kelengkapan')";
+                    '$gambar', '$status', '$kelengkapan')";
 
   $simpan = mysqli_query($koneksi, $query);
-
+  
   if($simpan) {
+      $produk_id = mysqli_insert_id($koneksi);
+      
+      // Insert stok per ukuran
+      $ukuran = ['S', 'M', 'L', 'XL'];
+      foreach($ukuran as $u) {
+          $stok = (int)$_POST['stok_'.strtolower($u)];
+          if($stok > 0) {
+              $query_ukuran = "INSERT INTO ukuran_produk_222145 
+                               (produk_id_222145, ukuran_222145, stok_222145) 
+                               VALUES ('$produk_id', '$u', '$stok')";
+              mysqli_query($koneksi, $query_ukuran);
+          }
+      }
+      
       echo "<script>
               alert('Produk berhasil ditambahkan!');
               document.location='index.php';
@@ -214,28 +226,26 @@ if(isset($_POST['simpan'])) {
                       <input type="number" class="form-control" id="harga_sewa" name="harga_sewa" placeholder="Contoh: 350000">
                   </div>
               </div>
-              <div class="col-md-6 mb-3">
-                  <label for="stok" class="form-label">Stok</label>
-                  <input type="number" class="form-control" id="stok" name="stok" placeholder="Jumlah unit tersedia">
-              </div>
           </div>
           <div class="mb-3">
-              <label for="ukuran" class="form-label">Ukuran Tersedia</label>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="ukuran_s" name="ukuran[]" value="S">
-                  <label class="form-check-label" for="ukuran_s">S (Small)</label>
-              </div>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="ukuran_m" name="ukuran[]" value="M">
-                  <label class="form-check-label" for="ukuran_m">M (Medium)</label>
-              </div>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="ukuran_l" name="ukuran[]" value="L">
-                  <label class="form-check-label" for="ukuran_l">L (Large)</label>
-              </div>
-              <div class="form-check">
-                  <input class="form-check-input" type="checkbox" id="ukuran_xl" name="ukuran[]" value="XL">
-                  <label class="form-check-label" for="ukuran_xl">XL (Extra Large)</label>
+              <label class="form-label">Stok per Ukuran</label>
+              <div class="row">
+                  <div class="col-md-3">
+                      <label for="stok_s" class="form-label">S (Small)</label>
+                      <input type="number" class="form-control" id="stok_s" name="stok_s" min="0" value="0">
+                  </div>
+                  <div class="col-md-3">
+                      <label for="stok_m" class="form-label">M (Medium)</label>
+                      <input type="number" class="form-control" id="stok_m" name="stok_m" min="0" value="0">
+                  </div>
+                  <div class="col-md-3">
+                      <label for="stok_l" class="form-label">L (Large)</label>
+                      <input type="number" class="form-control" id="stok_l" name="stok_l" min="0" value="0">
+                  </div>
+                  <div class="col-md-3">
+                      <label for="stok_xl" class="form-label">XL (Extra Large)</label>
+                      <input type="number" class="form-control" id="stok_xl" name="stok_xl" min="0" value="0">
+                  </div>
               </div>
           </div>
           <div class="mb-3">

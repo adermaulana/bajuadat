@@ -12,7 +12,7 @@ if(!isset($_SESSION['id_pelanggan'])) {
 $id_pelanggan = $_SESSION['id_pelanggan'];
 $order_id = isset($_GET['order_id']) ? (int)$_GET['order_id'] : 0;
 
-// Get order and customer details
+// Get order details
 $query = "SELECT p.*, 
                  pl.nama_lengkap_222145, 
                  pl.alamat_222145, 
@@ -51,28 +51,19 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
     
     // Handle file upload
     $bukti_pembayaran = '';
-    if(isset($_FILES['bukti_pembayaran'])) {
-        $file = $_FILES['bukti_pembayaran'];
-        $file_name = $file['name'];
-        $file_tmp = $file['tmp_name'];
-        $file_size = $file['size'];
-        $file_error = $file['error'];
+    if(isset($_FILES['bukti_pembayaran']) && $_FILES['bukti_pembayaran']['error'] == 0) {
+        $target_dir = "bukti_pembayaran/";
+        $file_name = basename($_FILES["bukti_pembayaran"]["name"]);
+        $target_file = $target_dir . uniqid() . '_' . $file_name;
         
-        // Check if file was uploaded without errors
-        if($file_error === 0) {
-            // Validate file type and size
-            $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
-            $max_size = 2 * 1024 * 1024; // 2MB
-            
-            if(in_array($file['type'], $allowed_types) && $file_size <= $max_size) {
-                // Generate unique filename
-                $file_ext = pathinfo($file_name, PATHINFO_EXTENSION);
-                $file_new_name = 'bukti_'.$order_id.'_'.time().'.'.$file_ext;
-                $upload_path = 'bukti_pembayaran/'.$file_new_name;
-                
-                if(move_uploaded_file($file_tmp, $upload_path)) {
-                    $bukti_pembayaran = $file_new_name;
-                }
+        // Check file type and size
+        $allowed_types = ['image/jpeg', 'image/png', 'image/jpg'];
+        $max_size = 2 * 1024 * 1024; // 2MB
+        
+        if(in_array($_FILES['bukti_pembayaran']['type'], $allowed_types) && 
+           $_FILES['bukti_pembayaran']['size'] <= $max_size) {
+            if(move_uploaded_file($_FILES["bukti_pembayaran"]["tmp_name"], $target_file)) {
+                $bukti_pembayaran = $target_file;
             }
         }
     }
@@ -90,7 +81,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
         '$metode_pembayaran',
         {$order['total']},
         '$bukti_pembayaran',
-        'menunggu',
+        'menunggu_verifikasi',
         NOW()
     )";
     
@@ -99,101 +90,134 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
                     SET status_222145 = 'diproses' 
                     WHERE pesanan_id_222145 = $order_id";
     
-    if(mysqli_query($koneksi, $insert_query) && mysqli_query($koneksi, $update_query)) {
+    // Start transaction
+    mysqli_begin_transaction($koneksi);
+    
+    try {
+        // Insert payment
+        if(!mysqli_query($koneksi, $insert_query)) {
+            throw new Exception("Gagal menyimpan pembayaran: " . mysqli_error($koneksi));
+        }
+        
+        // Update order status
+        if(!mysqli_query($koneksi, $update_query)) {
+            throw new Exception("Gagal mengupdate status pesanan: " . mysqli_error($koneksi));
+        }
+        
+        // Commit transaction
+        mysqli_commit($koneksi);
+        
         echo "<script>
-        alert('Konfirmasi pembayaran berhasil!');
+        alert('Konfirmasi pembayaran berhasil dikirim!');
         document.location='pembayaran.php';
         </script>";
         exit;
-    } else {
-        $error = "Gagal menyimpan konfirmasi pembayaran: ".mysqli_error($koneksi);
+    } catch (Exception $e) {
+        mysqli_rollback($koneksi);
+        $error = $e->getMessage();
     }
 }
 ?>
 
-<div class="row">
-    <div class="col-lg-4 col-md-12 col-xs-12">
-        <div class="card">
-            <div class="card-body">
-                <h4>Data Penyewa</h4>
-                <span>Nama : <b><?= htmlspecialchars($order['nama_lengkap_222145']) ?></b></span><br>
-                <span>Alamat : <b><?= htmlspecialchars($order['alamat_222145']) ?></b></span><br>
-                <span>Telepon : <b><?= htmlspecialchars($order['no_telp_222145']) ?></b></span><br>
-                <span>Email : <b><?= htmlspecialchars($order['email_222145']) ?></b></span><br>
-                <hr>
-                <span>Terima Kasih Telah Menyewa di Kami</span>
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Data Penyewa</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>Nama:</strong> <?= htmlspecialchars($order['nama_lengkap_222145']) ?></p>
+                    <p><strong>Alamat:</strong> <?= htmlspecialchars($order['alamat_222145']) ?></p>
+                    <p><strong>Telepon:</strong> <?= htmlspecialchars($order['no_telp_222145']) ?></p>
+                    <p><strong>Email:</strong> <?= htmlspecialchars($order['email_222145']) ?></p>
+                </div>
             </div>
         </div>
-    </div>
-    <div class="col">
-        <div class="card">
-            <div class="card-body col-lg-10">
-                <h4>Detail Penyewaan Baju Adat</h4>
-                <?php if(isset($error)): ?>
-                    <div class="alert alert-danger"><?= $error ?></div>
-                <?php endif; ?>
-                
-                <ul class="list-group mb-3">
-                    <?php 
-                    // Get order items
-                    $items_query = "SELECT dp.*, p.nama_produk_222145, p.ukuran_222145
-                                  FROM detail_pesanan_222145 dp
-                                  JOIN produk_222145 p ON dp.produk_id_222145 = p.produk_id_222145
-                                  WHERE dp.pesanan_id_222145 = $order_id";
-                    $items_result = mysqli_query($koneksi, $items_query);
+        
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5>Konfirmasi Pembayaran</h5>
+                </div>
+                <div class="card-body">
+                    <?php if(isset($error)): ?>
+                        <div class="alert alert-danger"><?= $error ?></div>
+                    <?php endif; ?>
                     
-                    while($item = mysqli_fetch_assoc($items_result)): ?>
-                        <li class="list-group-item d-flex justify-content-between">
-                            <span><?= htmlspecialchars($item['nama_produk_222145']) ?> - <?= htmlspecialchars($item['ukuran_222145']) ?></span>
-                            <span><?= $item['jumlah_222145'] ?> set</span>
-                        </li>
-                    <?php endwhile; ?>
+                    <h6>Detail Pesanan</h6>
+                    <table class="table table-bordered mb-4">
+                        <thead>
+                            <tr>
+                                <th>Produk</th>
+                                <th>Jumlah</th>
+                                <th>Harga/Hari</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php 
+                            // Get detailed order items
+                            $items_query = "SELECT dp.*, pr.nama_produk_222145, pr.harga_sewa_222145
+                                          FROM detail_pesanan_222145 dp
+                                          JOIN produk_222145 pr ON dp.produk_id_222145 = pr.produk_id_222145
+                                          WHERE dp.pesanan_id_222145 = $order_id";
+                            $items_result = mysqli_query($koneksi, $items_query);
+                            
+                            while($item = mysqli_fetch_assoc($items_result)): 
+                                $subtotal = $item['jumlah_222145'] * $item['harga_sewa_222145'] * $durasi;
+                            ?>
+                                <tr>
+                                    <td><?= htmlspecialchars($item['nama_produk_222145']) ?></td>
+                                    <td><?= $item['jumlah_222145'] ?></td>
+                                    <td>Rp <?= number_format($item['harga_sewa_222145'], 0, ',', '.') ?></td>
+                                    <td>Rp <?= number_format($subtotal, 0, ',', '.') ?></td>
+                                </tr>
+                            <?php endwhile; ?>
+                            <tr class="table-active">
+                                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                <td><strong>Rp <?= number_format($order['total'], 0, ',', '.') ?></strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
                     
-                    <li class="list-group-item d-flex justify-content-between">
-                        <span>Durasi Sewa</span>
-                        <span><?= $durasi ?> Hari</span>
-                    </li>
-                </ul>
-                
-                <form action="" method="post" enctype="multipart/form-data">                    
-                    <div class="mb-3">
-                        <label class="form-label">Total Pembayaran</label>
-                        <input type="text" name="total_bayar" value="Rp <?= number_format($order['total'], 0, ',', '.') ?>" class="form-control" readonly>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Metode Pembayaran</label>
-                        <select class="form-select" name="metode_pembayaran" required>
-                            <option value="">Pilih Bank</option>
-                            <option value="BCA">BCA - 0583493xxx (Baju Adat Nusantara)</option>
-                            <option value="BRI">BRI - 1234567890 (Baju Adat Nusantara)</option>
-                            <option value="Mandiri">Mandiri - 9876543210 (Baju Adat Nusantara)</option>
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Tanggal Pengambilan</label>
-                        <input type="date" class="form-control" name="tanggal_pengambilan" 
-                               min="<?= date('Y-m-d') ?>" required>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label class="form-label">Bukti Transfer</label>
-                        <input type="file" class="form-control" name="bukti_pembayaran" accept="image/*" required>
-                        <small class="text-muted">Upload bukti transfer (format: JPG/PNG, max 2MB)</small>
-                    </div>
-                    
-                    <div class="mb-3 form-check">
-                        <input type="checkbox" class="form-check-input" id="agreeTerms" required>
-                        <label class="form-check-label" for="agreeTerms">
-                            Saya menyetujui syarat dan ketentuan penyewaan
-                        </label>
-                    </div>
-                    
-                    <button type="submit" name="simpan" class="btn btn-primary">
-                        <i class="fas fa-paper-plane me-1"></i> Konfirmasi Pembayaran
-                    </button>
-                </form>
+                    <form method="post" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label class="form-label">Metode Pembayaran</label>
+                            <select class="form-select" name="metode_pembayaran" required>
+                                <option value="">Pilih Metode</option>
+                                <option value="Transfer Bank">Transfer Bank</option>
+                                <option value="E-Wallet">E-Wallet</option>
+                                <option value="Tunai">Tunai</option>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Tanggal Pengambilan</label>
+                            <input type="date" class="form-control" name="tanggal_pengambilan" 
+                                   min="<?= date('Y-m-d') ?>" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Bukti Pembayaran</label>
+                            <input type="file" class="form-control" name="bukti_pembayaran" accept="image/*" required>
+                            <small class="text-muted">Format: JPG/PNG, maksimal 2MB</small>
+                        </div>
+                        
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                            <label class="form-check-label" for="agreeTerms">
+                                Saya menyetujui syarat dan ketentuan penyewaan
+                            </label>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" name="simpan" class="btn btn-success btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i> Konfirmasi Pembayaran
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>

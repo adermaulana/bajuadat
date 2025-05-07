@@ -156,44 +156,64 @@ if($_SESSION['status'] != 'login'){
           Tambah Baju Adat Baru
         </a>
         <table id="myTable" class="table table-striped table-lg mt-3">
-          <thead>
-            <tr>
-              <th scope="col">No</th>
-              <th scope="col">Nama Baju Adat</th>
-              <th scope="col">Daerah Asal</th>
-              <th scope="col">Harga Sewa</th>
-              <th scope="col">Stok</th>
-              <th scope="col">Gambar</th>
-              <th scope="col">Action</th>
-            </tr>
-          </thead>
-          <tbody>
-          <?php
+            <thead>
+                <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">Nama Baju Adat</th>
+                    <th scope="col">Daerah Asal</th>
+                    <th scope="col">Harga Sewa</th>
+                    <th scope="col">Stok per Ukuran</th>
+                    <th scope="col">Gambar</th>
+                    <th scope="col">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+            <?php
                 $no = 1;
-                $tampil = mysqli_query($koneksi, "SELECT * FROM produk_222145");
+                $tampil = mysqli_query($koneksi, "SELECT p.*, 
+                                                GROUP_CONCAT(CONCAT(u.ukuran_222145, ':', u.stok_222145) SEPARATOR ', ') AS stok_ukuran
+                                          FROM produk_222145 p
+                                          LEFT JOIN ukuran_produk_222145 u ON p.produk_id_222145 = u.produk_id_222145
+                                          GROUP BY p.produk_id_222145");
                 while($data = mysqli_fetch_array($tampil)):
             ?>
             <tr>
                 <td><?= $no++ ?></td>
                 <td><?= $data['nama_produk_222145'] ?></td>
                 <td><?= $data['kategori_222145'] ?></td>
-                <td><?= $data['harga_sewa_222145'] ?></td>
-                <td><?= $data['stok_222145'] ?></td>
+                <td>Rp <?= number_format($data['harga_sewa_222145'], 0, ',', '.') ?></td>
+                <td>
+                    <?php 
+                    if(!empty($data['stok_ukuran'])) {
+                        $stok_ukuran = explode(", ", $data['stok_ukuran']);
+                        foreach($stok_ukuran as $stok) {
+                            list($ukuran, $jumlah) = explode(":", $stok);
+                            echo "<span class='badge bg-secondary me-1'>$ukuran: $jumlah</span>";
+                        }
+                    } else {
+                        echo "Tidak ada stok";
+                    }
+                    ?>
+                </td>
                 <td>                                
-                                  <a href="<?= $data['gambar_222145']; ?>" data-lightbox="foto-produk" data-title="Foto Produk">
-                                    <img src="<?= $data['gambar_222145']; ?>" alt="Foto Produk" width="100" height="100">
-                                </a></td>
+                    <a href="<?= $data['gambar_222145']; ?>" data-lightbox="foto-produk" data-title="Foto Produk">
+                        <img src="<?= $data['gambar_222145']; ?>" alt="Foto Produk" width="100" height="100">
+                    </a>
+                </td>
                 <td>
                     <div class="d-flex">
-                        <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                        <a href="" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                        <a href="edit.php?id=<?= $data['produk_id_222145'] ?>" class="badge bg-warning me-1">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="hapus.php?id=<?= $data['produk_id_222145'] ?>" class="badge bg-danger border-0" 
+                          onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')">
+                            <i class="fas fa-times-circle"></i>
+                        </a>
                     </div>
                 </td>
             </tr>
-            <?php
-                 endwhile; 
-                ?>
-          </tbody>
+            <?php endwhile; ?>
+            </tbody>
         </table>
       </div>
     </div>

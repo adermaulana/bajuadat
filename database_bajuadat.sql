@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 04, 2025 at 11:44 PM
+-- Generation Time: May 07, 2025 at 02:08 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -97,9 +97,7 @@ CREATE TABLE `pelanggan_222145` (
 --
 
 INSERT INTO `pelanggan_222145` (`pelanggan_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `alamat_222145`, `no_telp_222145`, `email_222145`, `foto_ktp_222145`, `status_akun_222145`) VALUES
-(4, 'pelanggan', '7f78f06d2d1262a0a222ca9834b15d9d', 'pelanggan', 'pelanggan', '038348', 'pelanggan@gmail.com', 'uploads/Screenshot (2).png', 'aktif'),
-(7, 'kun', '51711d3cb95945007b827cb703fcf398', 'kun', 'kun', 'kun', 'kun@gmail.com', NULL, 'aktif'),
-(8, 'rot', '0d3d238b089a67e34e39b5abf80db19b', 'rot', 'rot', 'rot', 'rot@gmail.com', NULL, 'aktif');
+(4, 'pelanggan', '7f78f06d2d1262a0a222ca9834b15d9d', 'pelanggan', 'pelanggan', '038348', 'pelanggan@gmail.com', 'uploads/Screenshot (2).png', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -148,11 +146,22 @@ CREATE TABLE `produk_222145` (
   `deskripsi_222145` text DEFAULT NULL,
   `kategori_222145` varchar(50) NOT NULL,
   `harga_sewa_222145` decimal(10,2) NOT NULL,
-  `stok_222145` int(11) NOT NULL,
-  `ukuran_222145` varchar(20) DEFAULT NULL,
   `gambar_222145` varchar(255) DEFAULT NULL,
   `kelengkapan_222145` text NOT NULL,
   `status_222145` enum('tersedia','tidak tersedia') DEFAULT 'tersedia'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ukuran_produk_222145`
+--
+
+CREATE TABLE `ukuran_produk_222145` (
+  `ukuran_id_222145` int(11) NOT NULL,
+  `produk_id_222145` int(11) DEFAULT NULL,
+  `ukuran_222145` varchar(10) DEFAULT NULL,
+  `stok_222145` int(11) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
@@ -213,6 +222,13 @@ ALTER TABLE `produk_222145`
   ADD PRIMARY KEY (`produk_id_222145`);
 
 --
+-- Indexes for table `ukuran_produk_222145`
+--
+ALTER TABLE `ukuran_produk_222145`
+  ADD PRIMARY KEY (`ukuran_id_222145`),
+  ADD KEY `produk_id_222145` (`produk_id_222145`);
+
+--
 -- AUTO_INCREMENT for dumped tables
 --
 
@@ -226,13 +242,13 @@ ALTER TABLE `admin_222145`
 -- AUTO_INCREMENT for table `detail_pesanan_222145`
 --
 ALTER TABLE `detail_pesanan_222145`
-  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `keranjang_222145`
 --
 ALTER TABLE `keranjang_222145`
-  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `pelanggan_222145`
@@ -244,19 +260,25 @@ ALTER TABLE `pelanggan_222145`
 -- AUTO_INCREMENT for table `pembayaran_222145`
 --
 ALTER TABLE `pembayaran_222145`
-  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `pesanan_222145`
 --
 ALTER TABLE `pesanan_222145`
-  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `produk_222145`
 --
 ALTER TABLE `produk_222145`
-  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+
+--
+-- AUTO_INCREMENT for table `ukuran_produk_222145`
+--
+ALTER TABLE `ukuran_produk_222145`
+  MODIFY `ukuran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
@@ -288,6 +310,12 @@ ALTER TABLE `pembayaran_222145`
 --
 ALTER TABLE `pesanan_222145`
   ADD CONSTRAINT `pesanan_222145_ibfk_1` FOREIGN KEY (`pelanggan_id_222145`) REFERENCES `pelanggan_222145` (`pelanggan_id_222145`);
+
+--
+-- Constraints for table `ukuran_produk_222145`
+--
+ALTER TABLE `ukuran_produk_222145`
+  ADD CONSTRAINT `ukuran_produk_222145_ibfk_1` FOREIGN KEY (`produk_id_222145`) REFERENCES `produk_222145` (`produk_id_222145`);
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
