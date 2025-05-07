@@ -81,7 +81,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
         '$metode_pembayaran',
         {$order['total']},
         '$bukti_pembayaran',
-        'menunggu_verifikasi',
+        'menunggu',
         NOW()
     )";
     
