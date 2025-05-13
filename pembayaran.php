@@ -36,10 +36,10 @@ $result = mysqli_query($koneksi, $query);
                     switch($order['status_222145']) {
                         case 'menunggu': $status_class = 'bg-warning'; break;
                         case 'diproses': $status_class = 'bg-info'; break;
-                        case 'disewa': $status_class = 'bg-secondary'; break;
-                        case 'selesai': $status_class = 'bg-danger'; break;
-                        case 'dibatalkan': $status_class = 'bg-success'; break;
-                        default: $status_class = 'bg-primary';
+                        case 'disewa': $status_class = 'bg-primary'; break;
+                        case 'selesai': $status_class = 'bg-success'; break;
+                        case 'dibatalkan': $status_class = 'bg-danger'; break;
+                        default: $status_class = 'bg-secondary';
                     }
                     
                     // Calculate rental duration

@@ -1,7 +1,6 @@
 <?php
 include 'partials/header.php';
 
-
 if(!isset($_SESSION['id_pelanggan'])) {
     header("Location: login_pelanggan.php");
     exit();
@@ -14,81 +13,106 @@ $customer_query = "SELECT * FROM pelanggan_222145 WHERE pelanggan_id_222145 = $i
 $customer_result = mysqli_query($koneksi, $customer_query);
 $customer = mysqli_fetch_assoc($customer_result);
 
-// Get cart items
-$cart_query = "SELECT k.*, p.nama_produk_222145, p.gambar_222145, p.harga_sewa_222145
+// Get cart items with size information
+$cart_query = "SELECT k.*, p.nama_produk_222145, p.gambar_222145, p.harga_sewa_222145, k.ukuran_222145
                FROM keranjang_222145 k
                JOIN produk_222145 p ON k.produk_id_222145 = p.produk_id_222145
                WHERE k.pelanggan_id_222145 = $id_pelanggan";
 $cart_result = mysqli_query($koneksi, $cart_query);
 
-// Calculate totals
+// Calculate totals and get the number of days
 $subtotal = 0;
-$ongkir = 50000; // Flat shipping rate
 $cart_items = [];
-while($item = mysqli_fetch_assoc($cart_result)) {
-    $item_total = $item['harga_sewa_222145'] * $item['jumlah_hari_222145'];
-    $subtotal += $item_total;
-    $cart_items[] = $item;
+$jumlah_hari = 0;
+
+if(mysqli_num_rows($cart_result) > 0) {
+    while($item = mysqli_fetch_assoc($cart_result)) {
+        $item_total = $item['harga_sewa_222145'] * $item['jumlah_hari_222145'];
+        $subtotal += $item_total;
+        $cart_items[] = $item;
+        $jumlah_hari = $item['jumlah_hari_222145'];
+    }
 }
 
-$grand_total = $subtotal + $ongkir;
+$grand_total = $subtotal;
 
 // Handle form submission
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
-    // Create order
-    $tanggal_pesanan = date('Y-m-d H:i:s');
-    $tanggal_sewa = $_POST['tanggal_sewa'];
-    $tanggal_kembali = $_POST['tanggal_kembali'];
-    $catatan = mysqli_real_escape_string($koneksi, $_POST['catatan']);
+    // Start transaction
+    mysqli_begin_transaction($koneksi);
     
-    $order_query = "INSERT INTO pesanan_222145 (
-        pelanggan_id_222145,
-        tanggal_pesanan_222145,
-        tanggal_sewa_222145,
-        tanggal_kembali_222145,
-        total_harga_222145,
-        status_222145,
-        catatan_222145
-    ) VALUES (
-        $id_pelanggan,
-        '$tanggal_pesanan',
-        '$tanggal_sewa',
-        '$tanggal_kembali',
-        $grand_total,
-        'menunggu',
-        '$catatan'
-    )";
-    
-    if(mysqli_query($koneksi, $order_query)) {
+    try {
+        // Create order
+        $tanggal_pesanan = date('Y-m-d H:i:s');
+        $tanggal_sewa = $_POST['tanggal_sewa'];
+        $tanggal_kembali = date('Y-m-d', strtotime($tanggal_sewa . " + $jumlah_hari days"));
+        $catatan = mysqli_real_escape_string($koneksi, $_POST['catatan']);
+        
+        $order_query = "INSERT INTO pesanan_222145 (
+            pelanggan_id_222145,
+            tanggal_pesanan_222145,
+            tanggal_sewa_222145,
+            tanggal_kembali_222145,
+            total_harga_222145,
+            status_222145,
+            catatan_222145
+        ) VALUES (
+            $id_pelanggan,
+            '$tanggal_pesanan',
+            '$tanggal_sewa',
+            '$tanggal_kembali',
+            $grand_total,
+            'menunggu',
+            '$catatan'
+        )";
+        
+        if(!mysqli_query($koneksi, $order_query)) {
+            throw new Exception("Error creating order: " . mysqli_error($koneksi));
+        }
+        
         $order_id = mysqli_insert_id($koneksi);
         
         // Move items from cart to order details
         foreach($cart_items as $item) {
+            // Validate that ukuran exists in the item array
+            if(!isset($item['ukuran_222145'])) {
+                throw new Exception("Ukuran tidak ditemukan untuk produk ini");
+            }
+            
             $detail_query = "INSERT INTO detail_pesanan_222145 (
                 pesanan_id_222145,
                 produk_id_222145,
                 jumlah_222145,
+                ukuran_222145,
                 harga_satuan_222145,
                 sub_total_222145
             ) VALUES (
                 $order_id,
                 {$item['produk_id_222145']},
                 {$item['jumlah_hari_222145']},
+                '{$item['ukuran_222145']}',
                 {$item['harga_sewa_222145']},
                 " . ($item['harga_sewa_222145'] * $item['jumlah_hari_222145']) . "
             )";
-            mysqli_query($koneksi, $detail_query);
+            
+            if(!mysqli_query($koneksi, $detail_query)) {
+                throw new Exception("Error creating order details: " . mysqli_error($koneksi));
+            }
         }
         
         // Clear cart
         $clear_cart = "DELETE FROM keranjang_222145 WHERE pelanggan_id_222145 = $id_pelanggan";
-        mysqli_query($koneksi, $clear_cart);
+        if(!mysqli_query($koneksi, $clear_cart)) {
+            throw new Exception("Error clearing cart: " . mysqli_error($koneksi));
+        }
         
-        // Redirect to payment page
+        mysqli_commit($koneksi);
         header("Location: pembayaran.php?order_id=$order_id");
         exit();
-    } else {
-        $error = "Error creating order: " . mysqli_error($koneksi);
+        
+    } catch (Exception $e) {
+        mysqli_rollback($koneksi);
+        $error = $e->getMessage();
     }
 }
 ?>
@@ -144,7 +168,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label for="tanggal_kembali" class="form-label">Tanggal Kembali</label>
-                                    <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali" required>
+                                    <input type="date" class="form-control" id="tanggal_kembali" name="tanggal_kembali" readonly>
+                                    <small class="text-muted">Otomatis dihitung <?= $jumlah_hari ?> hari setelah tanggal sewa</small>
                                 </div>
                             </div>
                             
@@ -173,14 +198,6 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
                         </ul>
                         
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Subtotal:
-                                <span>Rp <?= number_format($subtotal, 0, ',', '.') ?></span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Biaya Pengiriman:
-                                <span>Rp <?= number_format($ongkir, 0, ',', '.') ?></span>
-                            </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-bold fs-5">
                                 Total Pembayaran:
                                 <span>Rp <?= number_format($grand_total, 0, ',', '.') ?></span>
@@ -199,20 +216,15 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['checkout'])) {
 </div>
 
 <script>
-// Set minimum return date based on rental date
+// Set return date based on rental date and number of days
 document.getElementById('tanggal_sewa').addEventListener('change', function() {
     const sewaDate = new Date(this.value);
     const kembaliInput = document.getElementById('tanggal_kembali');
     
-    // Set min return date to 1 day after rental date
-    sewaDate.setDate(sewaDate.getDate() + 1);
-    const minReturnDate = sewaDate.toISOString().split('T')[0];
-    kembaliInput.min = minReturnDate;
-    
-    // If current return date is before new min date, reset it
-    if(kembaliInput.value && new Date(kembaliInput.value) < sewaDate) {
-        kembaliInput.value = minReturnDate;
-    }
+    // Calculate return date by adding the number of days
+    sewaDate.setDate(sewaDate.getDate() + <?= $jumlah_hari ?>);
+    const returnDate = sewaDate.toISOString().split('T')[0];
+    kembaliInput.value = returnDate;
 });
 </script>
 

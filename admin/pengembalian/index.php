@@ -9,7 +9,13 @@ if ($_SESSION['status'] != 'login') {
     header("location:../");
 }
 
-
+// Query untuk mendapatkan data pengembalian
+$query = "SELECT p.*, pl.nama_lengkap_222145, ps.tanggal_sewa_222145, ps.tanggal_kembali_222145 
+          FROM pengembalian_222145 p
+          JOIN pesanan_222145 ps ON p.pesanan_id_222145 = ps.pesanan_id_222145
+          JOIN pelanggan_222145 pl ON ps.pelanggan_id_222145 = pl.pelanggan_id_222145
+          ORDER BY p.tanggal_pengembalian_222145 DESC";
+$result = mysqli_query($koneksi, $query);
 ?>
 
 <!DOCTYPE html>
@@ -84,150 +90,137 @@ if ($_SESSION['status'] != 'login') {
         </div>
       </nav>
 
-  <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
-    <div class="col-lg-12">
-      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-        <h1 class="h2">Daftar Pengembalian Baju Adat</h1>
-      </div>
+    <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
+      <div class="col-lg-12">
+        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+          <h1 class="h2">Daftar Pengembalian Baju Adat</h1>
+          <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#tambahPengembalian">
+            <i class="fas fa-plus"></i> Tambah Pengembalian
+          </button>
+        </div>
 
-      <div class="table-responsive col-lg-12">
-        <table id="myTable" class="table table-striped table-sm mt-3">
-          <thead>
-            <tr>
-              <th scope="col">No</th>
-              <th scope="col">ID Penyewaan</th>
-              <th scope="col">Alasan Pengembalian</th>
-              <th scope="col">Keterangan</th>
-              <th scope="col">Status</th>
-              <th scope="col">Foto Kondisi</th>
-              <th scope="col">Tanggal Pengembalian</th>
-              <th scope="col">Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>1</td>
-              <td>RNT-2025041301</td>
-              <td>Pengembalian Normal</td>
-              <td>Baju adat dikembalikan dalam kondisi baik</td>
-              <td>
-                <span class="badge bg-success">Disetujui</span>
-              </td>
-              <td>
-                <a href="../../img/minang.jpg" data-lightbox="bukti-return-1" data-title="Kondisi Baju Adat">
-                  <img src="../../img/minang.jpg" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                </a>
-              </td>
-              <td>15/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>RNT-2025041202</td>
-              <td>Kerusakan Kecil</td>
-              <td>Terdapat noda pada bagian kerah kebaya</td>
-              <td>
-                <span class="badge bg-warning">Menunggu Konfirmasi</span>
-              </td>
-              <td>
-                <a href="../../img/minang.jpg" data-lightbox="bukti-return-1" data-title="Kondisi Baju Adat">
-                  <img src="../../img/minang.jpg" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                </a>
-              </td>
-              <td>12/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>RNT-2025041003</td>
-              <td>Kehilangan Aksesoris</td>
-              <td>Pendhing (ikat pinggang) tidak dikembalikan</td>
-              <td>
-                <span class="badge bg-danger">Ditolak</span>
-              </td>
-              <td>
-                <span class="text-muted">Belum ada bukti return</span>
-              </td>
-              <td>10/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>RNT-2025040804</td>
-              <td>Kerusakan Parah</td>
-              <td>Sobek pada bagian jahitan baju beskap</td>
-              <td>
-                <span class="badge bg-warning">Menunggu Konfirmasi</span>
-              </td>
-              <td>
-                <a href="../../img/minang.jpg" data-lightbox="bukti-return-1" data-title="Kondisi Baju Adat">
-                  <img src="../../img/minang.jpg" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                </a>
-              </td>
-              <td>08/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td>RNT-2025040605</td>
-              <td>Pengembalian Terlambat</td>
-              <td>Terlambat 2 hari dari batas waktu</td>
-              <td>
-                <span class="badge bg-success">Disetujui</span>
-              </td>
-              <td>
-                <a href="../../img/minang.jpg" data-lightbox="bukti-return-1" data-title="Kondisi Baju Adat">
-                  <img src="../../img/minang.jpg" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                </a>
-              </td>
-              <td>06/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-            <tr>
-              <td>6</td>
-              <td>RNT-2025040406</td>
-              <td>Pengembalian Normal</td>
-              <td>Dikembalikan dalam kondisi bersih</td>
-              <td>
-                <span class="badge bg-success">Disetujui</span>
-              </td>
-              <td>
-                <a href="../../img/minang.jpg" data-lightbox="bukti-return-1" data-title="Kondisi Baju Adat">
-                  <img src="../../img/minang.jpg" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
-                </a>
-              </td>
-              <td>04/04/2025</td>
-              <td>
-                <a href="detail.php" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
-                <a href="#" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
-                <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </main>
+        <!-- Modal Tambah Pengembalian -->
+        <div class="modal fade" id="tambahPengembalian" tabindex="-1" aria-labelledby="tambahPengembalianLabel" aria-hidden="true">
+          <div class="modal-dialog">
+            <div class="modal-content">
+              <form action="proses_pengembalian.php" method="POST" enctype="multipart/form-data">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="tambahPengembalianLabel">Tambah Data Pengembalian</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="mb-3">
+                    <label for="pesanan_id" class="form-label">Pilih Pesanan</label>
+                    <select class="form-select" id="pesanan_id" name="pesanan_id" required>
+                      <option value="">-- Pilih Pesanan --</option>
+                      <?php
+                      $query_pesanan = "SELECT p.*, pl.nama_lengkap_222145 
+                                      FROM pesanan_222145 p
+                                      JOIN pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+                                      WHERE p.status_222145 = 'Disewa'";
+                      $result_pesanan = mysqli_query($koneksi, $query_pesanan);
+                      while ($row = mysqli_fetch_assoc($result_pesanan)): ?>
+                        <option value="<?= $row['pesanan_id_222145']; ?>">
+                          <?= $row['pesanan_id_222145']; ?> - <?= $row['nama_lengkap_222145']; ?>
+                          (<?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?> s/d <?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?>)
+                        </option>
+                      <?php endwhile; ?>
+                    </select>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="alasan" class="form-label">Alasan Pengembalian</label>
+                    <select class="form-select" id="alasan" name="alasan" required>
+                      <option value="">-- Pilih Alasan --</option>
+                      <option value="Pengembalian Normal">Pengembalian Normal</option>
+                      <option value="Kerusakan Kecil">Kerusakan Kecil</option>
+                      <option value="Kerusakan Parah">Kerusakan Parah</option>
+                      <option value="Kehilangan Aksesoris">Kehilangan Aksesoris</option>
+                      <option value="Pengembalian Terlambat">Pengembalian Terlambat</option>
+                    </select>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="keterangan" class="form-label">Keterangan</label>
+                    <textarea class="form-control" id="keterangan" name="keterangan" rows="3" required></textarea>
+                  </div>
+                  
+                  <div class="mb-3">
+                    <label for="foto_kondisi" class="form-label">Foto Kondisi Baju</label>
+                    <input class="form-control" type="file" id="foto_kondisi" name="foto_kondisi">
+                    <small class="text-muted">Upload foto jika ada kerusakan atau masalah</small>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                  <button type="submit" name="tambah" class="btn btn-primary">Simpan</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+            <div class="table-responsive col-lg-12">
+              <table id="myTable" class="table table-striped table-sm mt-3">
+                <thead>
+                  <tr>
+                    <th scope="col">No</th>
+                    <th scope="col">ID Penyewaan</th>
+                    <th scope="col">Nama Pelanggan</th>
+                    <th scope="col">Alasan Pengembalian</th>
+                    <th scope="col">Keterangan</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Foto Kondisi</th>
+                    <th scope="col">Tanggal Pengembalian</th>
+                    <th scope="col">Aksi</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <?php 
+                  $no = 1;
+                  while ($row = mysqli_fetch_assoc($result)): 
+                    $status_class = '';
+                    if ($row['status_222145'] == 'Disetujui') {
+                      $status_class = 'bg-success';
+                    } elseif ($row['status_222145'] == 'Ditolak') {
+                      $status_class = 'bg-danger';
+                    } else {
+                      $status_class = 'bg-warning';
+                    }
+                  ?>
+                  <tr>
+                    <td><?= $no++; ?></td>
+                    <td><?= $row['pesanan_id_222145']; ?></td>
+                    <td><?= $row['nama_lengkap_222145']; ?></td>
+                    <td><?= $row['alasan_pengembalian_222145']; ?></td>
+                    <td><?= $row['keterangan_222145']; ?></td>
+                    <td>
+                      <span class="badge <?= $status_class; ?>"><?= $row['status_222145']; ?></span>
+                    </td>
+                    <td>
+                      <?php if (!empty($row['foto_kondisi_222145'])): ?>
+                        <a href="bukti_pengembalian/<?= $row['foto_kondisi_222145']; ?>" data-lightbox="bukti-return-<?= $row['pengembalian_id_222145']; ?>" data-title="Kondisi Baju Adat">
+                          <img src="bukti_pengembalian/<?= $row['foto_kondisi_222145']; ?>" alt="Kondisi Baju" style="max-width: 100px; max-height: 100px; object-fit: cover;">
+                        </a>
+                      <?php else: ?>
+                        <span class="text-muted">Tidak ada foto</span>
+                      <?php endif; ?>
+                    </td>
+                    <td><?= date('d/m/Y', strtotime($row['tanggal_pengembalian_222145'])); ?></td>
+                    <td>
+                      <a href="detail.php?id=<?= $row['pengembalian_id_222145']; ?>" class="badge bg-info border-0"><i class="fas fa-eye"></i></a>
+                      <?php if ($row['status_222145'] == 'Menunggu Konfirmasi'): ?>
+                        <a href="proses_pengembalian.php?action=approve&id=<?= $row['pengembalian_id_222145']; ?>" class="badge bg-success border-0" onclick="return confirm('Apakah Anda yakin ingin menerima pengembalian ini?')"><i class="fas fa-check-circle"></i></a>
+                        <a href="proses_pengembalian.php?action=reject&id=<?= $row['pengembalian_id_222145']; ?>" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda yakin ingin menolak pengembalian ini?')"><i class="fas fa-times-circle"></i></a>
+                      <?php endif; ?>
+                    </td>
+                  </tr>
+                  <?php endwhile; ?>
+                </tbody>
+              </table>
+            </div>
+          </div>
+    </main>
   </div>
 </div>
 <script src="../../lightbox/js/lightbox-plus-jquery.js"></script>

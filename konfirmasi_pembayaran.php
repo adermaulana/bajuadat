@@ -150,7 +150,7 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
                         <thead>
                             <tr>
                                 <th>Produk</th>
-                                <th>Jumlah</th>
+
                                 <th>Harga/Hari</th>
                                 <th>Subtotal</th>
                             </tr>
@@ -165,17 +165,17 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['simpan'])) {
                             $items_result = mysqli_query($koneksi, $items_query);
                             
                             while($item = mysqli_fetch_assoc($items_result)): 
-                                $subtotal = $item['jumlah_222145'] * $item['harga_sewa_222145'] * $durasi;
+                                $subtotal = $item['harga_sewa_222145'] * $durasi;
                             ?>
                                 <tr>
                                     <td><?= htmlspecialchars($item['nama_produk_222145']) ?></td>
-                                    <td><?= $item['jumlah_222145'] ?></td>
+
                                     <td>Rp <?= number_format($item['harga_sewa_222145'], 0, ',', '.') ?></td>
                                     <td>Rp <?= number_format($subtotal, 0, ',', '.') ?></td>
                                 </tr>
                             <?php endwhile; ?>
                             <tr class="table-active">
-                                <td colspan="3" class="text-end"><strong>Total</strong></td>
+                                <td colspan="2" class="text-end"><strong>Total</strong></td>
                                 <td><strong>Rp <?= number_format($order['total'], 0, ',', '.') ?></strong></td>
                             </tr>
                         </tbody>

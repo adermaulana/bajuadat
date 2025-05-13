@@ -26,7 +26,6 @@ $result = mysqli_query($koneksi, $query);
 
 // Calculate totals
 $subtotal = 0;
-$ongkir = 50000; // Flat shipping rate
 ?>
 
 <div class="container mt-5">
@@ -83,17 +82,9 @@ $ongkir = 50000; // Flat shipping rate
                     <div class="card-body">
                         <h5 class="card-title">Ringkasan Belanja</h5>
                         <ul class="list-group list-group-flush">
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Subtotal:
-                                <span>Rp <?= number_format($subtotal, 0, ',', '.') ?></span>
-                            </li>
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Pengiriman:
-                                <span>Rp <?= number_format($ongkir, 0, ',', '.') ?></span>
-                            </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center fw-bold">
                                 Total:
-                                <span>Rp <?= number_format($subtotal + $ongkir, 0, ',', '.') ?></span>
+                                <span>Rp <?= number_format($subtotal, 0, ',', '.') ?></span>
                             </li>
                         </ul>
                         <a href="checkout.php" class="btn btn-primary mt-3 w-100">Checkout</a>

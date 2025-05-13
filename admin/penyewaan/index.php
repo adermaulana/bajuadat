@@ -158,141 +158,126 @@ $result = mysqli_query($koneksi, $query);
       </nav>
 
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
-      <div class="col-lg-12">
-        <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-          <h1 class="h2">Data Penyewaan Baju Adat</h1>
-        </div>
+        <div class="col-lg-12">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">Data Penyewaan Baju Adat</h1>
+          </div>
 
-        <div class="table-responsive col-lg-12">
-          <table id="myTable" class="table table-striped table-sm mt-3">
-            <thead>
-              <tr>
-                <th scope="col">No</th>
-                <th scope="col">Nama Penyewa</th>
-                <th scope="col">Email</th>
-                <th scope="col">Alamat</th>
-                <th scope="col">Telepon</th>
-                <th scope="col">Total Biaya</th>
-                <th scope="col">Status</th>
-                <th scope="col">Aksi</th>
-              </tr>
-            </thead>
-            <tbody>
-              <?php 
-              $no = 1;
-              while($row = mysqli_fetch_assoc($result)): 
-                $formatted_price = "Rp. " . number_format($row['total_harga_222145'], 0, ',', '.');
-              ?>
+          <div class="table-responsive col-lg-12">
+            <table id="myTable" class="table table-striped table-sm mt-3">
+              <thead>
                 <tr>
-                  <td><?= $no++; ?></td>
-                  <td><?= htmlspecialchars($row['nama_lengkap_222145']); ?></td>
-                  <td><?= htmlspecialchars($row['email_222145']); ?></td>
-                  <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
-                  <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
-                  <td><?= $formatted_price; ?></td>
-                  <td>
-                    <?php
-                    // Dynamic status button based on status value
-                    switch($row['status_222145']) {
-                      case 'Sudah Bayar':
-                        echo '<div class="btn-group" role="group">
-                                <button type="button" class="btn btn-success" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                  Sudah Bayar
-                                </button>
-                                <button type="button" class="btn btn-primary distributor-pilih" data-id="'.$row['pesanan_id_222145'].'" data-bs-toggle="modal" data-bs-target="#distributorModal'.$row['pesanan_id_222145'].'">
-                                  Kirim Baju
-                                </button>
-                              </div>';
-                        break;
-                      case 'menunggu':
-                        echo '<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                Pending
-                              </button>';
-                        break;
-                      case 'diproses':
-                        echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                Proses
-                              </button>';
-                        break;
-                      case 'disewa':
-                        echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#deliveryModal'.$row['pesanan_id_222145'].'">
-                                Disewa
-                              </button>';
-                        break;
-                      case 'selesai':
-                        echo '<button type="button" class="btn btn-success">
-                                Selesai
-                              </button>';
-                        break;
-                      case 'Return Proses':
-                        echo '<a href="#" class="btn btn-secondary">
-                                Return Proses
-                              </a>';
-                        break;
-                      case 'dibatalkan':
-                        echo '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                Ditolak
-                              </button>';
-                        break;
-                      default:
-                        echo '<button type="button" class="btn btn-secondary">
-                                '.$row['status_222145'].'
-                              </button>';
-                    }
-                    ?>
-                  </td>
-                  <td>
-                    <a href="detail.php?id=<?= $row['pesanan_id_222145']; ?>" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                    <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                  </td>
+                  <th scope="col">No</th>
+                  <th scope="col">Nama Penyewa</th>
+                  <th scope="col">Email</th>
+                  <th scope="col">Alamat</th>
+                  <th scope="col">Telepon</th>
+                  <th scope="col">Total Biaya</th>
+                  <th scope="col">Status</th>
+                  <th scope="col">Aksi</th>
                 </tr>
+              </thead>
+              <tbody>
+                <?php 
+                $no = 1;
+                while($row = mysqli_fetch_assoc($result)): 
+                  $formatted_price = "Rp. " . number_format($row['total_harga_222145'], 0, ',', '.');
+                ?>
+                  <tr>
+                    <td><?= $no++; ?></td>
+                    <td><?= htmlspecialchars($row['nama_lengkap_222145']); ?></td>
+                    <td><?= htmlspecialchars($row['email_222145']); ?></td>
+                    <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
+                    <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
+                    <td><?= $formatted_price; ?></td>
+                    <td>
+                      <?php
+                      switch($row['status_222145']) {
+                        case 'menunggu':
+                          echo '<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                  Menunggu
+                                </button>';
+                          break;
+                        case 'diproses':
+                          echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                  Diproses
+                                </button>';
+                          break;
+                        case 'disewa':
+                          echo '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                  Disewa
+                                </button>';
+                          break;
+                        case 'selesai':
+                          echo '<button type="button" class="btn btn-success">
+                                  Selesai
+                                </button>';
+                          break;
+                        case 'dibatalkan':
+                          echo '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
+                                  Dibatalkan
+                                </button>';
+                          break;
+                        default:
+                          echo '<button type="button" class="btn btn-secondary">
+                                  '.$row['status_222145'].'
+                                </button>';
+                      }
+                      ?>
+                    </td>
+                    <td>
+                      <a href="detail.php?id=<?= $row['pesanan_id_222145']; ?>" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
+                      <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                    </td>
+                  </tr>
 
-                <!-- Dynamic Modals for each order -->
-                <div class="modal fade" id="exampleModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="exampleModalLabel">Detail Pesanan #<?= $row['pesanan_id_222145']; ?></h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p><strong>Nama Penyewa:</strong> <?= htmlspecialchars($row['nama_lengkap_222145']); ?></p>
-                        <p><strong>Tanggal Pesan:</strong> <?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></p>
-                        <p><strong>Tanggal Sewa:</strong> <?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></p>
-                        <p><strong>Tanggal Kembali:</strong> <?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></p>
-                        <p><strong>Total Biaya:</strong> <?= $formatted_price; ?></p>
-                        <p><strong>Status:</strong> <?= $row['status_222145']; ?></p>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                  <!-- Dynamic Modals for each order -->
+                  <div class="modal fade" id="exampleModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                    <div class="modal-dialog">
+                      <div class="modal-content">
+                        <div class="modal-header">
+                          <h1 class="modal-title fs-5" id="exampleModalLabel">Detail Pesanan #<?= $row['pesanan_id_222145']; ?></h1>
+                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                          <p><strong>Nama Penyewa:</strong> <?= htmlspecialchars($row['nama_lengkap_222145']); ?></p>
+                          <p><strong>Tanggal Pesan:</strong> <?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></p>
+                          <p><strong>Tanggal Sewa:</strong> <?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></p>
+                          <p><strong>Tanggal Kembali:</strong> <?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></p>
+                          <p><strong>Total Biaya:</strong> <?= $formatted_price; ?></p>
+                          
+                          <!-- Status Update Form -->
+                          <form action="update_status.php" method="post">
+                            <input type="hidden" name="pesanan_id" value="<?= $row['pesanan_id_222145']; ?>">
+                            
+                            <div class="mb-3">
+                              <label for="status_222145" class="form-label"><strong>Status:</strong></label>
+                              <select class="form-select" id="status_222145" name="status_222145" required>
+                                <option value="menunggu" <?= $row['status_222145'] == 'menunggu' ? 'selected' : ''; ?>>Menunggu</option>
+                                <option value="diproses" <?= $row['status_222145'] == 'diproses' ? 'selected' : ''; ?>>Diproses</option>
+                                <option value="disewa" <?= $row['status_222145'] == 'disewa' ? 'selected' : ''; ?>>Disewa</option>
+                                <option value="selesai" <?= $row['status_222145'] == 'selesai' ? 'selected' : ''; ?>>Selesai</option>
+                                <option value="dibatalkan" <?= $row['status_222145'] == 'dibatalkan' ? 'selected' : ''; ?>>Dibatalkan</option>
+                              </select>
+                            </div>
+                            
+                            <div class="d-grid gap-2">
+                              <button type="submit" class="btn btn-primary">Update Status</button>
+                            </div>
+                          </form>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
 
-                <!-- Delivery Modal -->
-                <div class="modal fade" id="deliveryModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="deliveryModalLabel" aria-hidden="true">
-                  <div class="modal-dialog">
-                    <div class="modal-content">
-                      <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="deliveryModalLabel">Konfirmasi Pengiriman Selesai</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                      </div>
-                      <div class="modal-body">
-                        <p>Apakah pengiriman pesanan #<?= $row['pesanan_id_222145']; ?> sudah selesai dan baju adat sudah diterima oleh penyewa?</p>
-                      </div>
-                      <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        <button type="button" class="btn btn-success" data-bs-dismiss="modal">Konfirmasi Selesai</button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              <?php endwhile; ?>
-            </tbody>
-          </table>
+                <?php endwhile; ?>
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
     </main>
   </div>
 </div>

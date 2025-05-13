@@ -5,10 +5,8 @@ include '../../config/koneksi.php';
 session_start();
 
 if($_SESSION['status'] != 'login'){
-
     session_unset();
     session_destroy();
-
     header("location:../");
 }
 
@@ -22,10 +20,13 @@ $query = "SELECT
             pl.alamat_222145,
             pl.email_222145,
             pl.no_telp_222145,
+            pl.foto_ktp_222145,
             pb.metode_pembayaran_222145,
             pb.jumlah_pembayaran_222145,
             pb.status_222145 as status_pembayaran,
-            pb.bukti_pembayaran_222145
+            pb.bukti_pembayaran_222145,
+            pb.tanggal_pembayaran_222145,
+            pb.catatan_222145 as catatan_pembayaran
           FROM 
             pesanan_222145 p
           JOIN 
@@ -46,8 +47,7 @@ $order = mysqli_fetch_assoc($result);
 // Query to fetch order items
 $items_query = "SELECT 
                   dp.*,
-                  p.nama_produk_222145,
-                  p.ukuran_222145
+                  p.nama_produk_222145
                 FROM 
                   detail_pesanan_222145 dp
                 JOIN 
@@ -60,6 +60,7 @@ $items_result = mysqli_query($koneksi, $items_query);
 $tanggal_pesanan = date('d F Y', strtotime($order['tanggal_pesanan_222145']));
 $tanggal_sewa = date('d F Y', strtotime($order['tanggal_sewa_222145']));
 $tanggal_kembali = date('d F Y', strtotime($order['tanggal_kembali_222145']));
+$tanggal_pembayaran = !empty($order['tanggal_pembayaran_222145']) ? date('d F Y', strtotime($order['tanggal_pembayaran_222145'])) : '-';
 
 // Format currency
 function format_rupiah($angka) {
@@ -77,7 +78,7 @@ function format_rupiah($angka) {
   <link rel="stylesheet" href="../../assets/dashboard.css">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-4bw+/aepP/YC94hEpVNVgiZdgIC5+VKNBQNGCHeKRQN+PtmoHDEXuppvnDJzQIu9" crossorigin="anonymous">
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-      <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
 
   <style>
       .bd-placeholder-img {
@@ -129,6 +130,14 @@ function format_rupiah($angka) {
         text-align: center;
         white-space: nowrap;
         -webkit-overflow-scrolling: touch;
+      }
+      
+      .payment-proof, .ktp-proof {
+        max-width: 100%;
+        height: auto;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        padding: 5px;
       }
     </style>
 
@@ -215,6 +224,10 @@ function format_rupiah($angka) {
                 <p><strong>Alamat:</strong> <?= htmlspecialchars($order['alamat_222145']) ?></p>
                 <p><strong>Email:</strong> <?= htmlspecialchars($order['email_222145']) ?></p>
                 <p><strong>Telepon:</strong> <?= htmlspecialchars($order['no_telp_222145']) ?></p>
+                <?php if(!empty($order['foto_ktp_222145'])): ?>
+                  <p><strong>Foto KTP:</strong></p>
+                  <img src="../../foto_ktp/<?= $order['foto_ktp_222145'] ?>" alt="Foto KTP" class="ktp-proof" style="max-width: 300px;">
+                <?php endif; ?>
               </div>
               <div class="col-md-6">
                 <h6>Informasi Penyewaan:</h6>
@@ -229,6 +242,7 @@ function format_rupiah($angka) {
                     echo $interval->format('%a hari');
                   ?>
                 </p>
+                <p><strong>Total Harga:</strong> <?= format_rupiah($order['total_harga_222145']) ?></p>
               </div>
             </div>
           </div>
@@ -306,11 +320,13 @@ function format_rupiah($angka) {
                 </p>
                 <p><strong>Metode Pembayaran:</strong> <?= $order['metode_pembayaran_222145'] ?? '-' ?></p>
                 <p><strong>Jumlah Pembayaran:</strong> <?= isset($order['jumlah_pembayaran_222145']) ? format_rupiah($order['jumlah_pembayaran_222145']) : '-' ?></p>
+                <p><strong>Tanggal Pembayaran:</strong> <?= $tanggal_pembayaran ?></p>
+                <p><strong>Catatan Pembayaran:</strong> <?= !empty($order['catatan_pembayaran']) ? htmlspecialchars($order['catatan_pembayaran']) : '-' ?></p>
               </div>
               <div class="col-md-6">
                 <?php if(!empty($order['bukti_pembayaran_222145'])): ?>
                   <p><strong>Bukti Pembayaran:</strong></p>
-                  <img src="../../bukti_pembayaran/<?= $order['bukti_pembayaran_222145'] ?>" alt="Bukti Pembayaran" class="payment-proof" style="max-width: 300px;">
+                  <img src="../../<?= $order['bukti_pembayaran_222145'] ?>" alt="Bukti Pembayaran" class="payment-proof">
                 <?php endif; ?>
               </div>
             </div>
@@ -319,7 +335,7 @@ function format_rupiah($angka) {
 
         <div class="card">
           <div class="card-header bg-primary text-white">
-            <h5 class="mb-0">Informasi Tambahan</h5>
+            <h5 class="mb-0">Status Penyewaan</h5>
           </div>
           <div class="card-body">
             <div class="row">
@@ -365,14 +381,11 @@ function format_rupiah($angka) {
 </div>
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
-
-<script type="text/javascript">
-
-
-
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
-  <script src="../../assets/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script><script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script><script src="../../assets/dashboard.js"></script>
+<script src="../../assets/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/feather-icons@4.28.0/dist/feather.min.js" integrity="sha384-uO3SXW5IuS1ZpFPKugNNWqTZRRglnUJK6UAZ/gxOX80nxEkN9NcGZTftn6RzhGWE" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4/dist/Chart.min.js" integrity="sha384-zNy6FEbO50N+Cg5wap8IKA4M/ZnLJgzc6w2NqACZaK0u0FXfOWRRJOnQtpZun8ha" crossorigin="anonymous"></script>
+<script src="../../assets/dashboard.js"></script>
 </body>
 </html>
