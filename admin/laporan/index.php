@@ -1,15 +1,38 @@
 <?php
-
 include '../../config/koneksi.php';
 
 session_start();
 
 if($_SESSION['status'] != 'login'){
-
     session_unset();
     session_destroy();
-
     header("location:../");
+}
+
+// Default filter: bulan ini
+$filter = isset($_GET['filter']) ? $_GET['filter'] : 'bulan';
+$start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
+$end_date = isset($_GET['end_date']) ? $_GET['end_date'] : '';
+
+// Build the WHERE clause based on filter
+$where = "";
+switch($filter) {
+    case 'hari':
+        $where = "WHERE DATE(p.tanggal_pesanan_222145) = CURDATE()";
+        break;
+    case 'minggu':
+        $where = "WHERE YEARWEEK(p.tanggal_pesanan_222145, 1) = YEARWEEK(CURDATE(), 1)";
+        break;
+    case 'bulan':
+        $where = "WHERE MONTH(p.tanggal_pesanan_222145) = MONTH(CURDATE()) AND YEAR(p.tanggal_pesanan_222145) = YEAR(CURDATE())";
+        break;
+    case 'range':
+        if(!empty($start_date) && !empty($end_date)) {
+            $where = "WHERE DATE(p.tanggal_pesanan_222145) BETWEEN '$start_date' AND '$end_date'";
+        }
+        break;
+    default:
+        $where = "";
 }
 
 $query = "SELECT 
@@ -27,10 +50,16 @@ $query = "SELECT
             pesanan_222145 p
           JOIN 
             pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+          $where
           ORDER BY 
             p.pesanan_id_222145 DESC";
 $result = mysqli_query($koneksi, $query);
 
+// Calculate total pendapatan
+$total_query = "SELECT SUM(total_harga_222145) as total FROM pesanan_222145 p $where";
+$total_result = mysqli_query($koneksi, $total_query);
+$total_row = mysqli_fetch_assoc($total_result);
+$total_pendapatan = $total_row['total'] ? "Rp. " . number_format($total_row['total'], 0, ',', '.') : "Rp. 0";
 ?>
 
 <!DOCTYPE html>
@@ -130,7 +159,7 @@ $result = mysqli_query($koneksi, $query);
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link active" href="index.php">
+              <a class="nav-link" href="../penyewaan/index.php">
                 <i class="fas fa-shopping-cart align-text-bottom me-2"></i>
                 Penyewaan
               </a>
@@ -154,7 +183,7 @@ $result = mysqli_query($koneksi, $query);
               </a>
             </li>
             <li class="nav-item">
-              <a class="nav-link" href="../laporan/index.php">
+              <a class="nav-link active" href="index.php">
                 <i class="fas fa-file align-text-bottom me-2"></i>
                 Laporan
               </a>
@@ -164,10 +193,71 @@ $result = mysqli_query($koneksi, $query);
       </nav>
 
       <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 mb-5">
-        <div class="col-lg-12">
-          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-            <h1 class="h2">Data Penyewaan Baju Adat</h1>
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        <h1 class="h2">Data Penyewaan Baju Adat</h1>
+        <div class="btn-toolbar mb-2 mb-md-0">
+          <div class="btn-group me-2">
+            <a href="export_word.php?filter=<?= $filter ?>&start_date=<?= $start_date ?>&end_date=<?= $end_date ?>" class="btn btn-sm btn-outline-primary">
+              <i class="fas fa-file-word"></i> Export to Word
+            </a>
+            <a href="export_excel.php?filter=<?= $filter ?>&start_date=<?= $start_date ?>&end_date=<?= $end_date ?>" class="btn btn-sm btn-outline-success">
+              <i class="fas fa-file-excel"></i> Export to Excel
+            </a>
           </div>
+        </div>
+      </div>
+
+    <!-- Filter Section -->
+    <div class="card mb-4">
+      <div class="card-header">
+        <i class="fas fa-filter me-1"></i>
+        Filter Laporan
+      </div>
+      <div class="card-body">
+        <form method="get" action="">
+          <div class="row mb-3">
+            <div class="col-md-3">
+              <select class="form-select" name="filter" id="filter" onchange="toggleDateRange()">
+                <option value="hari" <?= $filter == 'hari' ? 'selected' : '' ?>>Hari Ini</option>
+                <option value="minggu" <?= $filter == 'minggu' ? 'selected' : '' ?>>Minggu Ini</option>
+                <option value="bulan" <?= $filter == 'bulan' ? 'selected' : '' ?>>Bulan Ini</option>
+                <option value="range" <?= $filter == 'range' ? 'selected' : '' ?>>Range Tanggal</option>
+              </select>
+            </div>
+            <div class="col-md-4" id="dateRangeContainer" style="display: <?= $filter == 'range' ? 'block' : 'none' ?>;">
+              <div class="input-group">
+                <input type="date" class="form-control" name="start_date" value="<?= $start_date ?>">
+                <span class="input-group-text">s/d</span>
+                <input type="date" class="form-control" name="end_date" value="<?= $end_date ?>">
+              </div>
+            </div>
+            <div class="col-md-2">
+              <button type="submit" class="btn btn-primary">Filter</button>
+              <a href="index.php" class="btn btn-secondary">Reset</a>
+            </div>
+          </div>
+        </form>
+        
+        <!-- Summary Card -->
+        <div class="alert alert-info">
+          <strong>Total Pendapatan:</strong> <?= $total_pendapatan ?>
+          <span class="float-end">
+            <?php
+            switch($filter) {
+              case 'hari': echo "Laporan Harian (Hari Ini)"; break;
+              case 'minggu': echo "Laporan Mingguan (Minggu Ini)"; break;
+              case 'bulan': echo "Laporan Bulanan (Bulan Ini)"; break;
+              case 'range': 
+                echo "Laporan Dari " . date('d/m/Y', strtotime($start_date)) . 
+                     " Sampai " . date('d/m/Y', strtotime($end_date));
+                break;
+              default: echo "Laporan Semua Data";
+            }
+            ?>
+          </span>
+        </div>
+      </div>
+    </div>
 
           <div class="table-responsive col-lg-12">
             <table id="myTable" class="table table-striped table-sm mt-3">
@@ -180,7 +270,6 @@ $result = mysqli_query($koneksi, $query);
                   <th scope="col">Telepon</th>
                   <th scope="col">Total Biaya</th>
                   <th scope="col">Status</th>
-                  <th scope="col">Aksi</th>
                 </tr>
               </thead>
               <tbody>
@@ -231,54 +320,8 @@ $result = mysqli_query($koneksi, $query);
                       }
                       ?>
                     </td>
-                    <td>
-                      <a href="detail.php?id=<?= $row['pesanan_id_222145']; ?>" class="badge bg-success border-0"><i class="fas fa-eye"></i></a>
-                      <a href="#" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
-                    </td>
+
                   </tr>
-
-                  <!-- Dynamic Modals for each order -->
-                  <div class="modal fade" id="exampleModal<?= $row['pesanan_id_222145']; ?>" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
-                    <div class="modal-dialog">
-                      <div class="modal-content">
-                        <div class="modal-header">
-                          <h1 class="modal-title fs-5" id="exampleModalLabel">Detail Pesanan #<?= $row['pesanan_id_222145']; ?></h1>
-                          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                        </div>
-                        <div class="modal-body">
-                          <p><strong>Nama Penyewa:</strong> <?= htmlspecialchars($row['nama_lengkap_222145']); ?></p>
-                          <p><strong>Tanggal Pesan:</strong> <?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></p>
-                          <p><strong>Tanggal Sewa:</strong> <?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></p>
-                          <p><strong>Tanggal Kembali:</strong> <?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></p>
-                          <p><strong>Total Biaya:</strong> <?= $formatted_price; ?></p>
-                          
-                          <!-- Status Update Form -->
-                          <form action="update_status.php" method="post">
-                            <input type="hidden" name="pesanan_id" value="<?= $row['pesanan_id_222145']; ?>">
-                            
-                            <div class="mb-3">
-                              <label for="status_222145" class="form-label"><strong>Status:</strong></label>
-                              <select class="form-select" id="status_222145" name="status_222145" required>
-                                <option value="menunggu" <?= $row['status_222145'] == 'menunggu' ? 'selected' : ''; ?>>Menunggu</option>
-                                <option value="diproses" <?= $row['status_222145'] == 'diproses' ? 'selected' : ''; ?>>Diproses</option>
-                                <option value="disewa" <?= $row['status_222145'] == 'disewa' ? 'selected' : ''; ?>>Disewa</option>
-                                <option value="selesai" <?= $row['status_222145'] == 'selesai' ? 'selected' : ''; ?>>Selesai</option>
-                                <option value="dibatalkan" <?= $row['status_222145'] == 'dibatalkan' ? 'selected' : ''; ?>>Dibatalkan</option>
-                              </select>
-                            </div>
-                            
-                            <div class="d-grid gap-2">
-                              <button type="submit" class="btn btn-primary">Update Status</button>
-                            </div>
-                          </form>
-                        </div>
-                        <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
                 <?php endwhile; ?>
               </tbody>
             </table>
@@ -291,6 +334,20 @@ $result = mysqli_query($koneksi, $query);
 
 <!-- Include jQuery -->
 <script src="../DataTables/jQuery-3.7.0/jquery-3.7.0.min.js"></script>
+
+
+  <script>
+    function toggleDateRange() {
+      const filter = document.getElementById('filter').value;
+      const container = document.getElementById('dateRangeContainer');
+      
+      if (filter === 'range') {
+        container.style.display = 'block';
+      } else {
+        container.style.display = 'none';
+      }
+    }
+  </script>
 
 <script>
 

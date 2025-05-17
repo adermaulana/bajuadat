@@ -140,6 +140,12 @@ if($_SESSION['status'] != 'login'){
                 Admin
               </a>
             </li>
+            <li class="nav-item">
+              <a class="nav-link" href="../laporan/index.php">
+                <i class="fas fa-file align-text-bottom me-2"></i>
+                Laporan
+              </a>
+            </li>
           </ul>
         </div>
       </nav>
