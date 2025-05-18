@@ -1,7 +1,6 @@
 <?php 
 include 'partials/header.php';
 
-
 // Handle add to cart
 if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
     if(!isset($_SESSION['id_pelanggan'])) {
@@ -11,8 +10,8 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
 
     $pelanggan_id = $_SESSION['id_pelanggan'];
     $produk_id = $_POST['produk_id'];
-    $jumlah_hari = $_POST['jumlah_hari'];
     $ukuran = $_POST['ukuran'];
+    $jumlah = $_POST['jumlah'] ?? 1; // Default 1 jika tidak diisi
     
     // Cek stok tersedia
     $stok_query = "SELECT stok_222145 FROM ukuran_produk_222145 
@@ -20,38 +19,91 @@ if($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
     $stok_result = mysqli_query($koneksi, $stok_query);
     $stok_data = mysqli_fetch_assoc($stok_result);
     
-    if($stok_data && $stok_data['stok_222145'] > 0) {
+    if($stok_data && $stok_data['stok_222145'] >= $jumlah) {
         // Get product price
         $query = "SELECT harga_sewa_222145 FROM produk_222145 WHERE produk_id_222145 = $produk_id";
         $result = mysqli_query($koneksi, $query);
         $produk = mysqli_fetch_assoc($result);
         $harga_satuan = $produk['harga_sewa_222145'];
-        $sub_total = $harga_satuan * $jumlah_hari;
         
-        // Insert into keranjang_222145 table
-        $insert_query = "INSERT INTO keranjang_222145 (
-            pelanggan_id_222145,
-            produk_id_222145,
-            jumlah_hari_222145,
-            ukuran_222145,
-            harga_satuan_222145,
-            sub_total_222145
-        ) VALUES (
-            $pelanggan_id,
-            $produk_id,
-            $jumlah_hari,
-            '$ukuran',
-            $harga_satuan,
-            $sub_total
-        )";
+        // Mulai transaksi
+        mysqli_begin_transaction($koneksi);
         
-        if(mysqli_query($koneksi, $insert_query)) {
-            $success_message = "Produk berhasil ditambahkan ke keranjang!";
-        } else {
-            $error_message = "Gagal menambahkan produk: " . mysqli_error($koneksi);
+        try {
+            // Cek apakah produk dengan ukuran yang sama sudah ada di keranjang
+            $check_cart_query = "SELECT keranjang_id_222145, jumlah_222145 
+                                FROM keranjang_222145 
+                                WHERE pelanggan_id_222145 = $pelanggan_id 
+                                AND produk_id_222145 = $produk_id 
+                                AND ukuran_222145 = '$ukuran'";
+            $check_cart_result = mysqli_query($koneksi, $check_cart_query);
+            
+            if(mysqli_num_rows($check_cart_result) > 0) {
+                // Jika sudah ada, update jumlah
+                $cart_item = mysqli_fetch_assoc($check_cart_result);
+                $new_jumlah = $cart_item['jumlah_222145'] + $jumlah;
+                
+                $update_query = "UPDATE keranjang_222145 
+                                SET jumlah_222145 = $new_jumlah
+                                WHERE keranjang_id_222145 = ".$cart_item['keranjang_id_222145'];
+                
+                if(mysqli_query($koneksi, $update_query)) {
+                    // Update stok
+                    $update_stok_query = "UPDATE ukuran_produk_222145 
+                                        SET stok_222145 = stok_222145 - $jumlah 
+                                        WHERE produk_id_222145 = $produk_id 
+                                        AND ukuran_222145 = '$ukuran'";
+                    
+                    if(mysqli_query($koneksi, $update_stok_query)) {
+                        mysqli_commit($koneksi);
+                        $success_message = "Jumlah produk dalam keranjang telah diperbarui!";
+                    } else {
+                        throw new Exception("Gagal mengupdate stok: " . mysqli_error($koneksi));
+                    }
+                } else {
+                    throw new Exception("Gagal mengupdate keranjang: " . mysqli_error($koneksi));
+                }
+            } else {
+                // Jika belum ada, insert baru
+                $insert_query = "INSERT INTO keranjang_222145 (
+                    pelanggan_id_222145,
+                    produk_id_222145,
+                    ukuran_222145,
+                    jumlah_222145,
+                    harga_satuan_222145,
+                    tanggal_tambah_222145
+                ) VALUES (
+                    $pelanggan_id,
+                    $produk_id,
+                    '$ukuran',
+                    $jumlah,
+                    $harga_satuan,
+                    NOW()
+                )";
+                
+                if(mysqli_query($koneksi, $insert_query)) {
+                    // Update stok
+                    $update_stok_query = "UPDATE ukuran_produk_222145 
+                                        SET stok_222145 = stok_222145 - $jumlah 
+                                        WHERE produk_id_222145 = $produk_id 
+                                        AND ukuran_222145 = '$ukuran'";
+                    
+                    if(mysqli_query($koneksi, $update_stok_query)) {
+                        mysqli_commit($koneksi);
+                        $success_message = "Produk berhasil ditambahkan ke keranjang!";
+                    } else {
+                        throw new Exception("Gagal mengupdate stok: " . mysqli_error($koneksi));
+                    }
+                } else {
+                    throw new Exception("Gagal menambahkan produk: " . mysqli_error($koneksi));
+                }
+            }
+        } catch (Exception $e) {
+            mysqli_rollback($koneksi);
+            $error_message = $e->getMessage();
         }
     } else {
-        $error_message = "Stok untuk ukuran ini habis atau tidak tersedia";
+        $error_message = "Stok tidak mencukupi untuk jumlah yang diminta";
     }
 }
 
@@ -132,16 +184,14 @@ if(!$produk) {
                         <?php endif; ?>
                         
                         <div class="row g-3 align-items-center">
-                            <div class="col-auto">
-                                <label for="jumlah" class="col-form-label">Jumlah Hari:</label>
+                                <div class="col-auto">
+                                    <label for="jumlah" class="col-form-label">Jumlah:</label>
+                                </div>
+                                <div class="col-auto">
+                                    <input type="number" class="form-control" id="jumlah" name="jumlah" min="1" max="10" value="1" style="width: 80px;" required>
+                                </div>
                             </div>
-                            <div class="col-auto">
-                                <input type="number" class="form-control" id="jumlah" name="jumlah_hari" min="1" max="7" value="1" style="width: 80px;" required>
-                            </div>
-                            <div class="col-auto">
-                                <span class="text-muted">(max 7 hari)</span>
-                            </div>
-                        </div>
+                        
                         
                         <div class="row g-3 align-items-center mt-2">
                             <div class="col-auto">

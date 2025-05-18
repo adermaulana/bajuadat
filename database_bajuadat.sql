@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 14, 2025 at 01:32 AM
+-- Generation Time: May 18, 2025 at 12:35 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -68,10 +68,9 @@ CREATE TABLE `keranjang_222145` (
   `keranjang_id_222145` int(11) NOT NULL,
   `pelanggan_id_222145` int(11) DEFAULT NULL,
   `produk_id_222145` int(11) DEFAULT NULL,
-  `jumlah_hari_222145` int(11) DEFAULT NULL,
   `ukuran_222145` varchar(10) DEFAULT NULL,
+  `jumlah_222145` int(11) NOT NULL DEFAULT 1,
   `harga_satuan_222145` decimal(10,2) DEFAULT NULL,
-  `sub_total_222145` decimal(10,2) DEFAULT NULL,
   `tanggal_tambah_222145` datetime DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -92,6 +91,13 @@ CREATE TABLE `pelanggan_222145` (
   `foto_ktp_222145` varchar(255) DEFAULT NULL,
   `status_akun_222145` enum('aktif','nonaktif') DEFAULT 'aktif'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `pelanggan_222145`
+--
+
+INSERT INTO `pelanggan_222145` (`pelanggan_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `alamat_222145`, `no_telp_222145`, `email_222145`, `foto_ktp_222145`, `status_akun_222145`) VALUES
+(10, 'tes', '28b662d883b6d76fd96e4ddc5e9ba780', 'tes', 'tes', 'te23', 'test@gmail.com', NULL, 'aktif');
 
 -- --------------------------------------------------------
 
@@ -141,6 +147,7 @@ CREATE TABLE `pesanan_222145` (
   `tanggal_pesanan_222145` datetime DEFAULT current_timestamp(),
   `tanggal_sewa_222145` date NOT NULL,
   `tanggal_kembali_222145` date NOT NULL,
+  `jumlah_hari_222145` int(20) NOT NULL,
   `total_harga_222145` decimal(10,2) NOT NULL,
   `status_222145` enum('menunggu','diproses','disewa','selesai','dibatalkan') DEFAULT 'menunggu',
   `catatan_222145` text DEFAULT NULL
@@ -196,11 +203,11 @@ INSERT INTO `ukuran_produk_222145` (`ukuran_id_222145`, `produk_id_222145`, `uku
 (12, 8, 'M', 3),
 (13, 8, 'L', 3),
 (14, 8, 'XL', 4),
-(15, 9, 'S', 3),
-(16, 9, 'M', 3),
+(15, 9, 'S', 5),
+(16, 9, 'M', 1),
 (17, 9, 'L', 1),
 (18, 9, 'XL', 3),
-(19, 10, 'S', 1),
+(19, 10, 'S', 8),
 (20, 10, 'M', 1),
 (21, 10, 'L', 1),
 (22, 10, 'XL', 1),
@@ -299,37 +306,37 @@ ALTER TABLE `admin_222145`
 -- AUTO_INCREMENT for table `detail_pesanan_222145`
 --
 ALTER TABLE `detail_pesanan_222145`
-  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `keranjang_222145`
 --
 ALTER TABLE `keranjang_222145`
-  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
+  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
 
 --
 -- AUTO_INCREMENT for table `pelanggan_222145`
 --
 ALTER TABLE `pelanggan_222145`
-  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `pembayaran_222145`
 --
 ALTER TABLE `pembayaran_222145`
-  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `pengembalian_222145`
 --
 ALTER TABLE `pengembalian_222145`
-  MODIFY `pengembalian_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `pengembalian_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `pesanan_222145`
 --
 ALTER TABLE `pesanan_222145`
-  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `produk_222145`
