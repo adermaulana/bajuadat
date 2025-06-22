@@ -12,7 +12,17 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
+if(isset($_GET['hal']) == "hapus"){
 
+  $hapus = mysqli_query($koneksi, "DELETE FROM produk_222145 WHERE produk_id_222145 = '$_GET[id]'");
+
+  if($hapus){
+      echo "<script>
+      alert('Hapus data sukses!');
+      document.location='index.php';
+      </script>";
+  }
+}
 
 ?>
 
@@ -208,10 +218,10 @@ if($_SESSION['status'] != 'login'){
                 </td>
                 <td>
                     <div class="d-flex">
-                        <!-- <a href="edit.php?id=<?= $data['produk_id_222145'] ?>" class="badge bg-warning me-1">
+                        <a href="edit.php?id=<?= $data['produk_id_222145'] ?>" class="badge bg-warning me-1">
                             <i class="fas fa-edit"></i>
-                        </a> -->
-                        <a href="" class="badge bg-danger border-0" 
+                        </a>
+                        <a href="index.php?hal=hapus&id=<?= $data['produk_id_222145']?>" class="badge bg-danger border-0" 
                           onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')">
                             <i class="fas fa-times-circle"></i>
                         </a>

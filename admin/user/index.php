@@ -189,8 +189,8 @@ if(isset($_GET['hal']) == "hapus"){
                 <td><?= $data['email_222145'] ?></td>
                 <td>
                     <div class="d-flex">
-                        <a href="" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
-                        <a href="" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
+                        <a href="edit.php?hal=edit&id=<?= $data['admin_id_222145'] ?>" class="badge bg-warning me-1"><i class="fas fa-edit"></i></a>
+                        <a href="index.php?hal=hapus&id=<?= $data['admin_id_222145']?>" class="badge bg-danger border-0" onclick="return confirm('Apakah Anda Yakin Ingin Menghapus Data?')"><i class="fas fa-times-circle"></i></a>
                     </div>
                 </td>
             </tr>

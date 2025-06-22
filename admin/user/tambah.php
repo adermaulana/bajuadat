@@ -5,46 +5,51 @@ include '../../config/koneksi.php';
 session_start();
 
 if($_SESSION['status'] != 'login'){
-
     session_unset();
     session_destroy();
-
     header("location:../");
 }
 
-
 if(isset($_POST['simpan'])) {
-  // Get form data
-  $username = mysqli_real_escape_string($koneksi, $_POST['username']);
-  $password = md5($_POST['password']); // Using MD5 (not recommended)
-  $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
-  $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    // Get form data
+    $username = mysqli_real_escape_string($koneksi, $_POST['username']);
+    $password = mysqli_real_escape_string($koneksi, $_POST['password']);
+    $nama_lengkap = mysqli_real_escape_string($koneksi, $_POST['nama_lengkap']);
+    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    
+    // Validate password
+    if(strlen($password) < 8) {
+        $error = "Password minimal 8 karakter!";
+    } else if(!preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/', $password)) {
+        $error = "Password harus mengandung minimal 8 karakter dengan kombinasi huruf dan angka!";
+    }
+    // Validate email format
+    else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $error = "Format email tidak valid";
+    } else {
+        // Check if username or email already exists
+        $check_query = "SELECT * FROM admin_222145 WHERE username_222145 = '$username' OR email_222145 = '$email'";
+        $check_result = mysqli_query($koneksi, $check_query);
+        
+        if(mysqli_num_rows($check_result) > 0) {
+            $error = "Username atau email sudah terdaftar";
+        } else {
+            // Hash password using MD5 (consider upgrading to password_hash() for better security)
+            $hashed_password = md5($password);
+            
+            // Insert new admin
+            $simpan = mysqli_query($koneksi, "INSERT INTO admin_222145 (username_222145, password_222145, nama_lengkap_222145, email_222145) 
+                                            VALUES ('$username', '$hashed_password', '$nama_lengkap', '$email')");
 
-  // Check if username already exists
-  $check = mysqli_query($koneksi, "SELECT * FROM admin_222145 WHERE username_222145 = '$username'");
-  
-  if(mysqli_num_rows($check) > 0) {
-      echo "<script>
-              alert('Username sudah digunakan! Silakan gunakan username lain.');
-              document.location='tambah.php';
-          </script>";
-  } else {
-      // Insert new admin
-      $simpan = mysqli_query($koneksi, "INSERT INTO admin_222145 (username_222145, password_222145, nama_lengkap_222145, email_222145) 
-                                      VALUES ('$username', '$password', '$nama_lengkap', '$email')");
-
-      if($simpan) {
-          echo "<script>
-                  alert('Admin berhasil ditambahkan!');
-                  document.location='index.php';
-              </script>";
-      } else {
-          echo "<script>
-                  alert('Gagal menambahkan admin!');
-                  document.location='tambah.php';
-              </script>";
-      }
-  }
+            if($simpan) {
+                $success = "Admin berhasil ditambahkan!";
+                // Clear form
+                $_POST = array();
+            } else {
+                $error = "Gagal menambahkan admin: " . mysqli_error($koneksi);
+            }
+        }
+    }
 }
 
 ?>
@@ -187,31 +192,100 @@ if(isset($_POST['simpan'])) {
             <h1 class="h2">Tambah Admin Baru</h1>
         </div>
 
+        <!-- Alert untuk menampilkan pesan error atau sukses -->
+        <?php if (isset($error)): ?>
+            <div class="alert alert-danger"><?php echo $error; ?></div>
+        <?php endif; ?>
+        
+        <?php if (isset($success)): ?>
+            <div class="alert alert-success"><?php echo $success; ?></div>
+        <?php endif; ?>
+
         <div class="col-lg-8">
-          <form method="post" class="mb-5" enctype="multipart/form-data">
+            <form method="post" class="mb-5" id="adminForm">
                 <div class="mb-3">
                     <label for="nama_lengkap" class="form-label">Nama Lengkap</label>
-                    <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" required autofocus>
+                    <input type="text" class="form-control" id="nama_lengkap" name="nama_lengkap" 
+                        value="<?php echo isset($_POST['nama_lengkap']) ? htmlspecialchars($_POST['nama_lengkap']) : ''; ?>" required autofocus>
                 </div>
                 <div class="mb-3">
                     <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
+                    <input type="text" class="form-control" id="username" name="username" 
+                        value="<?php echo isset($_POST['username']) ? htmlspecialchars($_POST['username']) : ''; ?>" required>
                     <small class="text-muted">Username harus unik dan tidak boleh sama dengan yang sudah ada</small>
                 </div>
                 <div class="mb-3">
                     <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
+                    <input type="password" class="form-control" id="password" name="password" 
+                        minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required>
+                    <small id="passwordHelp" class="form-text text-muted">Password minimal 8 karakter dengan kombinasi huruf dan angka</small>
+                    <small id="passwordError" class="form-text text-danger" style="display: none;">Password harus minimal 8 karakter dengan kombinasi huruf dan angka!</small>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="showPassword" onclick="togglePassword()">
+                    <label class="form-check-label" for="showPassword">Tampilkan Password</label>
                 </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+                    <input type="email" class="form-control" id="email" name="email" 
+                        value="<?php echo isset($_POST['email']) ? htmlspecialchars($_POST['email']) : ''; ?>" required>
                 </div>
-                <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn btn">Tambah Admin</button>
+                <button style="background-color:#3a5a40; color:white;" type="submit" name="simpan" class="btn">Tambah Admin</button>
+                <a href="index.php" class="btn btn-secondary ms-2">Kembali</a>
             </form>
         </div>  
     </main>
   </div>
 </div>
+
+<script>
+    function togglePassword() {
+        var passwordField = document.getElementById("password");
+        if (passwordField.type === "password") {
+            passwordField.type = "text";
+        } else {
+            passwordField.type = "password";
+        }
+    }
+
+    // Real-time password validation
+    document.getElementById('password').addEventListener('input', function() {
+        var password = this.value;
+        var helpText = document.getElementById('passwordHelp');
+        var errorText = document.getElementById('passwordError');
+        
+        // Regex untuk mengecek minimal 8 karakter dengan huruf dan angka
+        var regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        
+        if (password.length > 0 && !regex.test(password)) {
+            helpText.style.display = 'none';
+            errorText.style.display = 'block';
+            this.classList.add('is-invalid');
+            this.classList.remove('is-valid');
+        } else if (regex.test(password)) {
+            helpText.style.display = 'block';
+            errorText.style.display = 'none';
+            this.classList.add('is-valid');
+            this.classList.remove('is-invalid');
+        } else {
+            helpText.style.display = 'block';
+            errorText.style.display = 'none';
+            this.classList.remove('is-invalid', 'is-valid');
+        }
+    });
+
+    // Form submission validation
+    document.getElementById('adminForm').addEventListener('submit', function(e) {
+        var password = document.getElementById('password').value;
+        var regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+        
+        if (!regex.test(password)) {
+            e.preventDefault();
+            alert('Password harus minimal 8 karakter dengan kombinasi huruf dan angka!');
+            return false;
+        }
+    });
+</script>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-HwwvtgBNo3bZJJLYd8oVXjrBZt8cqVSpeBNS5n7C8IVInixGAoxmnlMuBnhbgrkm" crossorigin="anonymous"></script>
   <script src="../../assets/js/bootstrap.bundle.min.js"></script>
