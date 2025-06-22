@@ -51,14 +51,26 @@ $query = "SELECT
             p.status_222145,
             p.tanggal_pesanan_222145,
             p.tanggal_sewa_222145,
-            p.tanggal_kembali_222145
+            p.tanggal_kembali_222145,
+            p.jumlah_hari_222145,
+            dp.produk_id_222145,
+            pr.nama_produk_222145,
+            pr.kategori_222145,
+            dp.jumlah_222145,
+            dp.ukuran_222145,
+            dp.harga_satuan_222145,
+            dp.sub_total_222145
           FROM 
             pesanan_222145 p
           JOIN 
             pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+          JOIN 
+            detail_pesanan_222145 dp ON p.pesanan_id_222145 = dp.pesanan_id_222145
+          JOIN 
+            produk_222145 pr ON dp.produk_id_222145 = pr.produk_id_222145
           $where
           ORDER BY 
-            p.pesanan_id_222145 DESC";
+            p.pesanan_id_222145 DESC, dp.detail_id_222145 ASC";
 $result = mysqli_query($koneksi, $query);
 
 // Hitung total pendapatan
@@ -82,44 +94,66 @@ header("Expires: 0");
 <body>
   <table border="1">
     <tr>
-      <td colspan="9" style="text-align: center; font-weight: bold; font-size: 16px;">LAPORAN PENYEWAAN BAJU ADAT</td>
+      <td colspan="13" style="text-align: center; font-weight: bold; font-size: 16px;">PENYEWAAN BAJU ADAT TOKO UNDIPA</td>
     </tr>
     <tr>
-      <td colspan="9" style="text-align: center;"><?= $judul ?></td>
+      <td colspan="13" style="text-align: center;"><?= $judul ?></td>
     </tr>
     <tr>
-      <td colspan="9" style="text-align: center;">Dicetak pada: <?= date('d/m/Y H:i:s') ?></td>
+      <td colspan="13" style="text-align: center;">Dicetak pada: <?= date('d/m/Y H:i:s') ?></td>
     </tr>
     <tr>
       <th>No</th>
+      <th>ID Pesanan</th>
       <th>Nama Penyewa</th>
       <th>Alamat</th>
       <th>Telepon</th>
-      <th>Tanggal Pesan</th>
+      <th>Nama Produk</th>
+      <th>Kategori</th>
+      <th>Ukuran</th>
+      <th>Jumlah</th>
+      <th>Harga Satuan</th>
+      <th>Sub Total</th>
       <th>Tanggal Sewa</th>
       <th>Tanggal Kembali</th>
-      <th>Total Biaya</th>
+      <th>Jumlah Hari</th>
       <th>Status</th>
     </tr>
     <?php 
     $no = 1;
+    $current_pesanan = '';
+    $total_keseluruhan = 0;
     while($row = mysqli_fetch_assoc($result)): 
-      $formatted_price = number_format($row['total_harga_222145'], 0, ',', '.');
+      $formatted_harga_satuan = number_format($row['harga_satuan_222145'], 0, ',', '.');
+      $formatted_sub_total = number_format($row['sub_total_222145'], 0, ',', '.');
+      $total_keseluruhan += $row['sub_total_222145'];
+      
+      // Cek apakah ini pesanan yang sama (untuk menggabungkan baris yang sama)
+      $show_pesanan_info = ($current_pesanan != $row['pesanan_id_222145']);
+      if($show_pesanan_info) {
+        $current_pesanan = $row['pesanan_id_222145'];
+      }
     ?>
       <tr>
         <td><?= $no++; ?></td>
-        <td><?= htmlspecialchars($row['nama_lengkap_222145']); ?></td>
-        <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
-        <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
-        <td><?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></td>
-        <td><?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></td>
-        <td><?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></td>
-        <td style="text-align: right;">Rp <?= $formatted_price; ?></td>
-        <td><?= ucfirst($row['status_222145']); ?></td>
+        <td><?= $row['pesanan_id_222145']; ?></td>
+        <td><?= $show_pesanan_info ? htmlspecialchars($row['nama_lengkap_222145']) : ''; ?></td>
+        <td><?= $show_pesanan_info ? htmlspecialchars($row['alamat_222145']) : ''; ?></td>
+        <td><?= $show_pesanan_info ? htmlspecialchars($row['no_telp_222145']) : ''; ?></td>
+        <td><?= htmlspecialchars($row['nama_produk_222145']); ?></td>
+        <td><?= htmlspecialchars($row['kategori_222145']); ?></td>
+        <td><?= htmlspecialchars($row['ukuran_222145']); ?></td>
+        <td style="text-align: center;"><?= $row['jumlah_222145']; ?></td>
+        <td style="text-align: right;">Rp <?= $formatted_harga_satuan; ?></td>
+        <td style="text-align: right;">Rp <?= $formatted_sub_total; ?></td>
+        <td><?= $show_pesanan_info ? date('d/m/Y', strtotime($row['tanggal_sewa_222145'])) : ''; ?></td>
+        <td><?= $show_pesanan_info ? date('d/m/Y', strtotime($row['tanggal_kembali_222145'])) : ''; ?></td>
+        <td style="text-align: center;"><?= $show_pesanan_info ? $row['jumlah_hari_222145'] . ' hari' : ''; ?></td>
+        <td><?= $show_pesanan_info ? ucfirst($row['status_222145']) : ''; ?></td>
       </tr>
     <?php endwhile; ?>
     <tr>
-      <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL PENDAPATAN</td>
+      <td colspan="14" style="text-align: right; font-weight: bold;">TOTAL PENDAPATAN</td>
       <td style="text-align: right; font-weight: bold;">Rp <?= $total_pendapatan ?></td>
     </tr>
   </table>

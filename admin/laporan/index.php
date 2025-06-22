@@ -269,7 +269,7 @@ $total_pendapatan = $total_row['total'] ? "Rp. " . number_format($total_row['tot
                   <th scope="col">Alamat</th>
                   <th scope="col">Telepon</th>
                   <th scope="col">Total Biaya</th>
-                  <th scope="col">Status</th>
+
                 </tr>
               </thead>
               <tbody>
@@ -285,41 +285,7 @@ $total_pendapatan = $total_row['total'] ? "Rp. " . number_format($total_row['tot
                     <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
                     <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
                     <td><?= $formatted_price; ?></td>
-                    <td>
-                      <?php
-                      switch($row['status_222145']) {
-                        case 'menunggu':
-                          echo '<button type="button" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                  Menunggu
-                                </button>';
-                          break;
-                        case 'diproses':
-                          echo '<button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                  Diproses
-                                </button>';
-                          break;
-                        case 'disewa':
-                          echo '<button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                  Disewa
-                                </button>';
-                          break;
-                        case 'selesai':
-                          echo '<button type="button" class="btn btn-success">
-                                  Selesai
-                                </button>';
-                          break;
-                        case 'dibatalkan':
-                          echo '<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#exampleModal'.$row['pesanan_id_222145'].'">
-                                  Dibatalkan
-                                </button>';
-                          break;
-                        default:
-                          echo '<button type="button" class="btn btn-secondary">
-                                  '.$row['status_222145'].'
-                                </button>';
-                      }
-                      ?>
-                    </td>
+
 
                   </tr>
                 <?php endwhile; ?>

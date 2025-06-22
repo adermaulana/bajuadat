@@ -41,25 +41,26 @@ switch($filter) {
         $judul = "Laporan Semua Data";
 }
 
-$query = "SELECT 
-            p.pesanan_id_222145,
-            pl.nama_lengkap_222145,
-            pl.email_222145,
-            pl.alamat_222145,
-            pl.no_telp_222145,
-            p.total_harga_222145,
-            p.status_222145,
-            p.tanggal_pesanan_222145,
-            p.tanggal_sewa_222145,
-            p.tanggal_kembali_222145
-          FROM 
-            pesanan_222145 p
-          JOIN 
-            pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
-          $where
-          ORDER BY 
-            p.pesanan_id_222145 DESC";
-$result = mysqli_query($koneksi, $query);
+// Query untuk mendapatkan data pesanan
+$query_pesanan = "SELECT 
+                    p.pesanan_id_222145,
+                    pl.nama_lengkap_222145,
+                    pl.email_222145,
+                    pl.alamat_222145,
+                    pl.no_telp_222145,
+                    p.total_harga_222145,
+                    p.status_222145,
+                    p.tanggal_pesanan_222145,
+                    p.tanggal_sewa_222145,
+                    p.tanggal_kembali_222145
+                  FROM 
+                    pesanan_222145 p
+                  JOIN 
+                    pelanggan_222145 pl ON p.pelanggan_id_222145 = pl.pelanggan_id_222145
+                  $where
+                  ORDER BY 
+                    p.pesanan_id_222145 DESC";
+$result_pesanan = mysqli_query($koneksi, $query_pesanan);
 
 // Hitung total pendapatan
 $total_query = "SELECT SUM(total_harga_222145) as total FROM pesanan_222145 p $where";
@@ -84,6 +85,7 @@ header("Expires: 0");
     border: 1px solid #000;
     border-collapse: collapse;
     width: 100%;
+    margin-bottom: 20px;
   }
   .table-word th, .table-word td {
     border: 1px solid #000;
@@ -92,58 +94,133 @@ header("Expires: 0");
   .table-word th {
     background-color: #f2f2f2;
   }
-  .text-center {
-    text-align: center;
+  .detail-table {
+    border: 1px solid #000;
+    border-collapse: collapse;
+    width: 100%;
+    margin-top: 10px;
+    margin-bottom: 20px;
   }
-  .text-right {
-    text-align: right;
+  .detail-table th, .detail-table td {
+    border: 1px solid #000;
+    padding: 3px;
+    font-size: 10px;
+  }
+  .detail-table th {
+    background-color: #e6e6e6;
+  }
+  .pesanan-header {
+    background-color: #f9f9f9;
+    font-weight: bold;
+    padding: 10px;
+    border: 1px solid #000;
+    margin-top: 15px;
   }
 </style>
 </head>
 <body>
   <div style="text-align: center; margin-bottom: 20px;">
-    <h2>LAPORAN PENYEWAAN BAJU ADAT</h2>
+    <h2>PENYEWAAN BAJU ADAT TOKO UNDIPA</h2>
     <h3><?= $judul ?></h3>
     <p>Dicetak pada: <?= date('d/m/Y H:i:s') ?></p>
   </div>
 
-  <table class="table-word">
-    <thead>
+  <?php 
+  $no = 1;
+  while($pesanan = mysqli_fetch_assoc($result_pesanan)): 
+    $formatted_total = "Rp. " . number_format($pesanan['total_harga_222145'], 0, ',', '.');
+  ?>
+    
+    <!-- Header Pesanan -->
+    <div class="pesanan-header">
+      <strong>PESANAN #<?= $pesanan['pesanan_id_222145'] ?></strong>
+    </div>
+    
+    <!-- Info Pelanggan -->
+    <table class="table-word">
       <tr>
-        <th>No</th>
-        <th>Nama Penyewa</th>
-        <th>Alamat</th>
-        <th>Telepon</th>
-        <th>Tanggal Pesan</th>
-        <th>Tanggal Sewa</th>
-        <th>Tanggal Kembali</th>
-        <th>Total Biaya</th>
-        <th>Status</th>
+        <td width="20%"><strong>Nama Penyewa</strong></td>
+        <td><?= htmlspecialchars($pesanan['nama_lengkap_222145']) ?></td>
+        <td width="20%"><strong>Tanggal Pesan</strong></td>
+        <td><?= date('d/m/Y', strtotime($pesanan['tanggal_pesanan_222145'])) ?></td>
       </tr>
-    </thead>
-    <tbody>
-      <?php 
-      $no = 1;
-      while($row = mysqli_fetch_assoc($result)): 
-        $formatted_price = "Rp. " . number_format($row['total_harga_222145'], 0, ',', '.');
-      ?>
-        <tr>
-          <td><?= $no++; ?></td>
-          <td><?= htmlspecialchars($row['nama_lengkap_222145']); ?></td>
-          <td><?= htmlspecialchars($row['alamat_222145']); ?></td>
-          <td><?= htmlspecialchars($row['no_telp_222145']); ?></td>
-          <td><?= date('d/m/Y', strtotime($row['tanggal_pesanan_222145'])); ?></td>
-          <td><?= date('d/m/Y', strtotime($row['tanggal_sewa_222145'])); ?></td>
-          <td><?= date('d/m/Y', strtotime($row['tanggal_kembali_222145'])); ?></td>
-          <td><?= $formatted_price; ?></td>
-          <td><?= ucfirst($row['status_222145']); ?></td>
-        </tr>
-      <?php endwhile; ?>
-    </tbody>
-  </table>
+      <tr>
+        <td><strong>Alamat</strong></td>
+        <td><?= htmlspecialchars($pesanan['alamat_222145']) ?></td>
+        <td><strong>Tanggal Sewa</strong></td>
+        <td><?= date('d/m/Y', strtotime($pesanan['tanggal_sewa_222145'])) ?></td>
+      </tr>
+      <tr>
+        <td><strong>Telepon</strong></td>
+        <td><?= htmlspecialchars($pesanan['no_telp_222145']) ?></td>
+        <td><strong>Tanggal Kembali</strong></td>
+        <td><?= date('d/m/Y', strtotime($pesanan['tanggal_kembali_222145'])) ?></td>
+      </tr>
+      <tr>
+        <td><strong>Status</strong></td>
+        <td><?= ucfirst($pesanan['status_222145']) ?></td>
+        <td><strong>Total Biaya</strong></td>
+        <td><strong><?= $formatted_total ?></strong></td>
+      </tr>
+    </table>
 
-  <div style="margin-top: 20px; text-align: right; font-weight: bold;">
-    Total Pendapatan: <?= $total_pendapatan ?>
+    <!-- Detail Baju -->
+    <?php
+    $query_detail = "SELECT 
+                       pr.nama_produk_222145,
+                       pr.kategori_222145,
+                       dp.jumlah_222145,
+                       dp.ukuran_222145,
+                       dp.harga_satuan_222145,
+                       dp.sub_total_222145
+                     FROM 
+                       detail_pesanan_222145 dp
+                     JOIN 
+                       produk_222145 pr ON dp.produk_id_222145 = pr.produk_id_222145
+                     WHERE 
+                       dp.pesanan_id_222145 = " . $pesanan['pesanan_id_222145'];
+    $result_detail = mysqli_query($koneksi, $query_detail);
+    ?>
+    
+    <table class="detail-table">
+      <thead>
+        <tr>
+          <th>No</th>
+          <th>Nama Baju</th>
+          <th>Kategori</th>
+          <th>Ukuran</th>
+          <th>Jumlah</th>
+          <th>Harga Satuan</th>
+          <th>Sub Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php 
+        $no_detail = 1;
+        while($detail = mysqli_fetch_assoc($result_detail)): 
+          $formatted_price = "Rp. " . number_format($detail['harga_satuan_222145'], 0, ',', '.');
+          $formatted_subtotal = "Rp. " . number_format($detail['sub_total_222145'], 0, ',', '.');
+        ?>
+          <tr>
+            <td><?= $no_detail++ ?></td>
+            <td><?= htmlspecialchars($detail['nama_produk_222145']) ?></td>
+            <td><?= htmlspecialchars($detail['kategori_222145']) ?></td>
+            <td><?= htmlspecialchars($detail['ukuran_222145']) ?></td>
+            <td><?= $detail['jumlah_222145'] ?></td>
+            <td><?= $formatted_price ?></td>
+            <td><?= $formatted_subtotal ?></td>
+          </tr>
+        <?php endwhile; ?>
+      </tbody>
+    </table>
+
+  <?php 
+  $no++;
+  endwhile; 
+  ?>
+
+  <div style="margin-top: 20px; text-align: right; font-weight: bold; font-size: 14px;">
+    <strong>TOTAL PENDAPATAN: <?= $total_pendapatan ?></strong>
   </div>
 
   <div style="margin-top: 50px; text-align: right;">

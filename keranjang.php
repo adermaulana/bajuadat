@@ -262,7 +262,7 @@ $subtotal = 0;
                             <a href="checkout.php" class="btn btn-success">
                                 <i class="fas fa-credit-card me-2"></i> Lanjut ke Checkout
                             </a>
-                            <a href="produk.php" class="btn btn-outline-primary">
+                            <a href="bajuadat.php" class="btn btn-outline-primary">
                                 <i class="fas fa-arrow-left me-2"></i> Lanjut Belanja
                             </a>
                         </div>

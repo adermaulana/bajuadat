@@ -18,8 +18,14 @@ if (isset($_POST['registrasi'])) {
     $email = mysqli_real_escape_string($koneksi, $_POST['email_pelanggan']);
     $telepon = mysqli_real_escape_string($koneksi, $_POST['telepon_pelanggan']);
 
+    // Validate password
+    if(strlen($password) < 8) {
+        $error = "Password minimal 8 karakter!";
+    } else if(!preg_match('/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/', $password)) {
+        $error = "Password harus mengandung minimal 8 karakter dengan kombinasi huruf dan angka!";
+    }
     // Validate email format
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $error = "Format email tidak valid";
     } else {
         // Check if username or email already exists
@@ -102,7 +108,7 @@ if (isset($_POST['registrasi'])) {
                         <div class="alert alert-success"><?php echo $success; ?></div>
                     <?php endif; ?>
 
-                    <form method="post">
+                    <form method="post" id="registrationForm">
                         <div class="mb-3">
                             <label for="nama_pelanggan" class="form-label">Nama Pelanggan</label>
                             <input type="text" class="form-control" id="nama_pelanggan" name="nama_pelanggan" 
@@ -130,7 +136,10 @@ if (isset($_POST['registrasi'])) {
                         </div>
                         <div class="mb-3">
                             <label for="password_pelanggan" class="form-label">Password</label>
-                            <input type="password" class="form-control" id="password_pelanggan" name="password_pelanggan" required>
+                            <input type="password" class="form-control" id="password_pelanggan" name="password_pelanggan" 
+                                minlength="8" pattern="^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$" required>
+                            <small id="passwordHelp" class="form-text text-muted">Password minimal 8 karakter dengan kombinasi huruf dan angka</small>
+                            <small id="passwordError" class="form-text text-danger" style="display: none;">Password harus minimal 8 karakter dengan kombinasi huruf dan angka!</small>
                         </div>
                         <div class="mb-3 form-check">
                             <input type="checkbox" class="form-check-input" id="showPassword" onclick="togglePassword()">
@@ -153,6 +162,44 @@ if (isset($_POST['registrasi'])) {
                 passwordField.type = "password";
             }
         }
+
+        // Real-time password validation
+        document.getElementById('password_pelanggan').addEventListener('input', function() {
+            var password = this.value;
+            var helpText = document.getElementById('passwordHelp');
+            var errorText = document.getElementById('passwordError');
+            
+            // Regex untuk mengecek minimal 8 karakter dengan huruf dan angka
+            var regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            
+            if (password.length > 0 && !regex.test(password)) {
+                helpText.style.display = 'none';
+                errorText.style.display = 'block';
+                this.classList.add('is-invalid');
+                this.classList.remove('is-valid');
+            } else if (regex.test(password)) {
+                helpText.style.display = 'block';
+                errorText.style.display = 'none';
+                this.classList.add('is-valid');
+                this.classList.remove('is-invalid');
+            } else {
+                helpText.style.display = 'block';
+                errorText.style.display = 'none';
+                this.classList.remove('is-invalid', 'is-valid');
+            }
+        });
+
+        // Form submission validation
+        document.getElementById('registrationForm').addEventListener('submit', function(e) {
+            var password = document.getElementById('password_pelanggan').value;
+            var regex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+            
+            if (!regex.test(password)) {
+                e.preventDefault();
+                alert('Password harus minimal 8 karakter dengan kombinasi huruf dan angka!');
+                return false;
+            }
+        });
     </script>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.bundle.min.js"></script>
