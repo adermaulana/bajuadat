@@ -9,6 +9,7 @@ if($_SESSION['status'] != 'login'){
     header("location:../");
 }
 
+$nama_admin = $_SESSION['nama_admin']; 
 // Ambil parameter filter
 $filter = isset($_GET['filter']) ? $_GET['filter'] : 'bulan';
 $start_date = isset($_GET['start_date']) ? $_GET['start_date'] : '';
@@ -228,6 +229,7 @@ header("Expires: 0");
     <br><br><br>
     <p>_________________________</p>
     <p>Admin</p>
+    <p>Dicetak oleh <?= $nama_admin ?></p>
   </div>
 </body>
 </html>
