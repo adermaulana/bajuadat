@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: May 18, 2025 at 12:35 PM
+-- Generation Time: Jun 23, 2025 at 02:03 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,7 +40,7 @@ CREATE TABLE `admin_222145` (
 --
 
 INSERT INTO `admin_222145` (`admin_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `email_222145`) VALUES
-(5, 'admin', '21232f297a57a5a743894a0e4a801fc3', 'admin', 'admin@gmail.com');
+(5, 'admin', 'de88e3e4ab202d87754078cbb2df6063', 'admin', 'admin@gmail.com');
 
 -- --------------------------------------------------------
 
@@ -97,7 +97,20 @@ CREATE TABLE `pelanggan_222145` (
 --
 
 INSERT INTO `pelanggan_222145` (`pelanggan_id_222145`, `username_222145`, `password_222145`, `nama_lengkap_222145`, `alamat_222145`, `no_telp_222145`, `email_222145`, `foto_ktp_222145`, `status_akun_222145`) VALUES
-(10, 'tes', '28b662d883b6d76fd96e4ddc5e9ba780', 'tes', 'tes', 'te23', 'test@gmail.com', NULL, 'aktif');
+(1, 'andi_pratama', 'de88e3e4ab202d87754078cbb2df6063', 'Andi Pratama Wijaya', 'Jl. Merdeka No. 15, Jakarta Pusat', '081234567890', 'andi.pratama@email.com', 'ktp_001.jpg', 'aktif'),
+(2, 'sari_melati', 'de88e3e4ab202d87754078cbb2df6063', 'Sari Melati Sari', 'Jl. Sudirman No. 45, Surabaya', '081298765432', 'sari.melati@email.com', 'ktp_002.jpg', 'aktif'),
+(3, 'budi_santoso', 'de88e3e4ab202d87754078cbb2df6063', 'Budi Santoso', 'Jl. Gatot Subroto No. 78, Bandung', '081356789012', 'budi.santoso@email.com', 'ktp_003.jpg', 'nonaktif'),
+(4, 'maya_indira', 'de88e3e4ab202d87754078cbb2df6063', 'Maya Indira Putri', 'Jl. Diponegoro No. 23, Yogyakarta', '081445667788', 'maya.indira@email.com', 'ktp_004.jpg', 'aktif'),
+(5, 'rizki_ahmad', 'de88e3e4ab202d87754078cbb2df6063', 'Rizki Ahmad Fauzi', 'Jl. Ahmad Yani No. 67, Medan', '081567890123', 'rizki.ahmad@email.com', 'ktp_005.jpg', 'aktif'),
+(6, 'dewi_lestari', 'de88e3e4ab202d87754078cbb2df6063', 'Dewi Lestari', 'Jl. Pahlawan No. 34, Makassar', '081612345678', 'dewi.lestari@email.com', 'ktp_006.jpg', 'aktif'),
+(7, 'hadi_kurniawan', 'de88e3e4ab202d87754078cbb2df6063', 'Hadi Kurniawan', 'Jl. Veteran No. 89, Semarang', '081723456789', 'hadi.kurniawan@email.com', 'uploads/68588fea33d68.png', 'aktif'),
+(8, 'fitri_rahayu', 'de88e3e4ab202d87754078cbb2df6063', 'Fitri Rahayu', 'Jl. Pemuda No. 12, Palembang', '081834567890', 'fitri.rahayu@email.com', 'ktp_008.jpg', 'aktif'),
+(9, 'doni_setiawan', 'de88e3e4ab202d87754078cbb2df6063', 'Doni Setiawan', 'Jl. Proklamasi No. 56, Denpasar', '081945678901', 'doni.setiawan@email.com', 'ktp_009.jpg', 'nonaktif'),
+(11, 'agus_hermawan', 'de88e3e4ab202d87754078cbb2df6063', 'Agus Hermawan', 'Jl. Cut Nyak Dien No. 25, Banda Aceh', '081187654321', 'agus.hermawan@email.com', 'ktp_011.jpg', 'aktif'),
+(12, 'rina_salsabila', 'de88e3e4ab202d87754078cbb2df6063', 'Rina Salsabila', 'Jl. R.A. Kartini No. 43, Padang', '081276543210', 'rina.salsabila@email.com', 'ktp_012.jpg', 'aktif'),
+(13, 'tommy_wijaya', 'de88e3e4ab202d87754078cbb2df6063', 'Tommy Wijaya', 'Jl. Sisingamangaraja No. 18, Batam', '081365432109', 'tommy.wijaya@email.com', 'ktp_013.jpg', 'aktif'),
+(14, 'sinta_permata', 'de88e3e4ab202d87754078cbb2df6063', 'Sinta Permata Sari', 'Jl. Jendral Sudirman No. 71, Pontianak', '081454321098', 'sinta.permata@email.com', 'ktp_014.jpg', 'nonaktif'),
+(15, 'fajar_nugroho', 'de88e3e4ab202d87754078cbb2df6063', 'Fajar Nugroho', 'Jl. Panglima Polim No. 29, Manado', '081543210987', 'fajar.nugroho@email.com', 'ktp_015.jpg', 'aktif');
 
 -- --------------------------------------------------------
 
@@ -179,7 +192,17 @@ INSERT INTO `produk_222145` (`produk_id_222145`, `nama_produk_222145`, `deskrips
 (9, 'Baju Adat Minang', 'Sumatera Barat', 'Sumatera Barat', 110000.00, 'uploads/minang.jpg', 'Sumatera Barat', 'tersedia'),
 (10, 'Baju Adat Jawa', 'Jawa Tengah', 'Jawa Tengah', 115000.00, 'uploads/kebaya.png', 'Jawa Tengah', 'tersedia'),
 (11, 'Baju Adat Sulawesi Selatan', 'Sulawesi Selatan', 'Sulawesi Selatan', 120000.00, 'uploads/bajubodo.jpeg', 'Sulawesi Selatan', 'tersedia'),
-(12, 'Baju Adat Sumatera', 'Sumatera Utara', 'Sumatera Utara', 110000.00, 'uploads/sumatera.jpg', 'Sumatera Utara', 'tersedia');
+(13, 'Baju Adat Aceh', 'Aceh', 'Aceh', 120000.00, 'uploads/f698fce9-8cc5-4785-8c79-1acceb9d9f96_43.jpg', 'Baju, Celana', 'tersedia'),
+(14, 'Baju Adat Batak', 'Sumatera Utara', 'Sumatera Utara', 130000.00, 'uploads/pakaian-adat-batak-toba_43.jpeg', 'Baju, Celana', 'tersedia'),
+(15, 'Baju Adat Betawi', 'DKI Jakarta', 'DKI Jakarta', 140000.00, 'uploads/images.jpeg', 'Baju, Celana', 'tersedia'),
+(16, 'Baju Adat Sunda', 'Jawa Barat', 'Jawa Barat', 130000.00, 'uploads/baju-adat-menak-pakaian-khas-jawa-barat-untuk-kaum-bangsawan_43.jpeg', 'Baju, Celana', 'tersedia'),
+(17, 'Baju Adat Dayak', 'Kalimantan', 'Kalimantan', 130000.00, 'uploads/Sapei-e1718087894749.jpeg', 'Baju, Celana', 'tersedia'),
+(18, 'Baju Adat Papua ', 'Papua', 'Papua', 135000.00, 'uploads/ppaua.jpeg', 'Baju, Celana', 'tersedia'),
+(19, 'Baju Adat Maluku ', 'Maluku ', 'Maluku ', 125000.00, 'uploads/54512339-118465939328619-6367029561872461298-n-2-9fe02ed21ff502ccbf88757db46243d8.jpg', 'Baju, Celana', 'tersedia'),
+(20, 'Baju Adat Nusa Tenggara Barat', 'Lombok', 'Lombok', 120000.00, 'uploads/Pakaian-Adat-Suku-Bima-NTB-sejarah-negara.com_.jpg', 'Baju, Celana', 'tersedia'),
+(21, 'Baju Adat Nusa Tenggara Timur', 'Flores', 'Flores', 135000.00, 'uploads/be4c8fb9cbc2f047f813d2ba61f6b6ac.jpg', 'Baju, Celana', 'tersedia'),
+(22, 'Baju Adat Sumatera Selatan', 'Sumatera Selatan', 'Sumatera Selatan', 125000.00, 'uploads/1711903333_bc7b11974433f487badd.png', 'Celana, Baju', 'tersedia'),
+(23, 'Baju Adat Yogyakarta', 'DI Yogyakarta', 'DI Yogyakarta', 145000.00, 'uploads/busana-kesatriyan-.jpg', 'Celana, Baju', 'tersedia');
 
 -- --------------------------------------------------------
 
@@ -202,7 +225,7 @@ INSERT INTO `ukuran_produk_222145` (`ukuran_id_222145`, `produk_id_222145`, `uku
 (11, 8, 'S', 2),
 (12, 8, 'M', 3),
 (13, 8, 'L', 3),
-(14, 8, 'XL', 4),
+(14, 8, 'XL', 6),
 (15, 9, 'S', 5),
 (16, 9, 'M', 1),
 (17, 9, 'L', 1),
@@ -215,10 +238,50 @@ INSERT INTO `ukuran_produk_222145` (`ukuran_id_222145`, `produk_id_222145`, `uku
 (24, 11, 'M', 1),
 (25, 11, 'L', 3),
 (26, 11, 'XL', 1),
-(27, 12, 'S', 2),
-(28, 12, 'M', 5),
-(29, 12, 'L', 4),
-(30, 12, 'XL', 6);
+(31, 13, 'S', 4),
+(32, 13, 'M', 4),
+(33, 13, 'L', 4),
+(34, 13, 'XL', 4),
+(35, 14, 'S', 4),
+(36, 14, 'M', 4),
+(37, 14, 'L', 4),
+(38, 14, 'XL', 4),
+(39, 15, 'S', 5),
+(40, 15, 'M', 4),
+(41, 15, 'L', 4),
+(42, 15, 'XL', 4),
+(43, 16, 'S', 4),
+(44, 16, 'M', 4),
+(45, 16, 'L', 4),
+(46, 16, 'XL', 4),
+(47, 17, 'S', 5),
+(48, 17, 'M', 4),
+(49, 17, 'L', 4),
+(50, 17, 'XL', 4),
+(51, 18, 'S', 3),
+(52, 18, 'M', 3),
+(53, 18, 'L', 3),
+(54, 18, 'XL', 4),
+(55, 19, 'S', 4),
+(56, 19, 'M', 4),
+(57, 19, 'L', 5),
+(58, 19, 'XL', 4),
+(59, 20, 'S', 5),
+(60, 20, 'M', 4),
+(61, 20, 'L', 5),
+(62, 20, 'XL', 5),
+(63, 21, 'S', 4),
+(64, 21, 'M', 3),
+(65, 21, 'L', 4),
+(66, 21, 'XL', 4),
+(67, 22, 'S', 5),
+(68, 22, 'M', 4),
+(69, 22, 'L', 5),
+(70, 22, 'XL', 5),
+(71, 23, 'S', 4),
+(72, 23, 'M', 4),
+(73, 23, 'L', 4),
+(74, 23, 'XL', 5);
 
 --
 -- Indexes for dumped tables
@@ -306,49 +369,49 @@ ALTER TABLE `admin_222145`
 -- AUTO_INCREMENT for table `detail_pesanan_222145`
 --
 ALTER TABLE `detail_pesanan_222145`
-  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
+  MODIFY `detail_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
 
 --
 -- AUTO_INCREMENT for table `keranjang_222145`
 --
 ALTER TABLE `keranjang_222145`
-  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `keranjang_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=40;
 
 --
 -- AUTO_INCREMENT for table `pelanggan_222145`
 --
 ALTER TABLE `pelanggan_222145`
-  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `pelanggan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=17;
 
 --
 -- AUTO_INCREMENT for table `pembayaran_222145`
 --
 ALTER TABLE `pembayaran_222145`
-  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
+  MODIFY `pembayaran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `pengembalian_222145`
 --
 ALTER TABLE `pengembalian_222145`
-  MODIFY `pengembalian_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `pengembalian_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- AUTO_INCREMENT for table `pesanan_222145`
 --
 ALTER TABLE `pesanan_222145`
-  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
+  MODIFY `pesanan_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `produk_222145`
 --
 ALTER TABLE `produk_222145`
-  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `produk_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `ukuran_produk_222145`
 --
 ALTER TABLE `ukuran_produk_222145`
-  MODIFY `ukuran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=31;
+  MODIFY `ukuran_id_222145` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=75;
 
 --
 -- Constraints for dumped tables
